@@ -1,0 +1,30 @@
+{
+  "name": "Xvent",
+  "version": "0.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build:dev": "./node_modules/.bin/webpack --env=dev --progress --profile --colors -w",
+    "build:prod": "./node_modules/.bin/webpack --env=prod --progress --profile --colors",
+    "dev-server": "./node_modules/.bin/webpack-dev-server --env=dev --progress --profile --colors"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/luwenxull/Xvent.git"
+  },
+  "keywords": [
+    "Rx",
+    "event"
+  ],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/luwenxull/Xvent/issues"
+  },
+  "homepage": "https://github.com/luwenxull/Xvent#readme",
+  "dependencies": {
+    "hammerjs": "^2.0.8",
+    "rxjs-es": "^5.0.0-beta.12"
+  },
+  "devDependencies": {}
+}
