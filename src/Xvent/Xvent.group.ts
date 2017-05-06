@@ -5,11 +5,11 @@ export default class Group<T> implements XventGroup<T>{
     constructor(private groupName: String, private stream: Observable<T>) {
 
     }
-    mergeStream(stream: Observable<T>):XventGroup<T> {
+    mergeStream(stream: Observable<T>):Group<T> {
         this.setStream(this.stream.merge(stream))
         return this
     }
-    setStream(stream: Observable<T>): XventGroup<T> {
+    setStream(stream: Observable<T>): Group<T> {
         this.stream = stream
         return this
     }
