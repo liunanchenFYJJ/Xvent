@@ -3,7 +3,6 @@ export default class Group {
 	constructor(groupName, stream) {
 		this.groupName = groupName;
 		this.stream = stream;
-		this.subject = new Subject();
 	}
 
 	mergeStream(stream) {
@@ -24,18 +23,6 @@ export default class Group {
 	}
 
 	subscribe(observer) {
-		let subject = this.subject;
-		subject.subscribe(observer);
-		this.getStream().subscribe({
-			next(...arg){
-				subject.next(...arg)
-			},
-			error(){
-				subject.error()
-			},
-			complete(){
-				subject.complete
-			}
-		})
+		this.getStream().subscribe(observer)
 	}
 }
