@@ -1,19 +1,29 @@
 import Xvent from '../index'
 let x = new Xvent();
 
-let store=x.getStore();
+let store = x.getStore();
 
-x.on('name',next=>{
-  console.log(next)
+function log(v) {
+  console.log(v)
+}
+function log2(v) {
+  console.log(v, 2)
+}
+let a = {
+  name: 'shujia'
+};
+x.on('name', [log, log2]);
+x.bind(['age', 'name'], a);
+x.on('location',function(next){
+
 });
-x.on('name',next=>{
-  console.log(next,2)
-});
-store.name='luwenxu';
+// store.name = 'luwenxu';
 // store.p=new Promise(resolve=>{
 //   resolve(1)
 // });
 // x.on('p',next=>{
 //   console.log(next)
 // });
-console.log(store)
+window.store = store;
+window.a=a;
+window.x=x;

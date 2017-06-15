@@ -1,4 +1,5 @@
 import {Subject, Observable} from 'rxjs-es'
+import {toArray} from './tool'
 export default class Stream {
   constructor() {
     this.listendStreams = new Map()
@@ -14,10 +15,10 @@ export default class Stream {
 
   next(key, value) {
     if (value instanceof Promise) {
-      this.setStream(key, Observable.fromPromise(value));
+      this.setStream(key, Observable.fromPromise(value).map(value=>({key,value,})));
       this.reOn(key)
     } else {
-      this.getStream(key).next(value)
+      this.getStream(key).next({key,value,})
     }
   }
 
@@ -30,17 +31,17 @@ export default class Stream {
     this.listendStreams.set(key, listeners)
   }
 
-  on(key, updaters, needTrace = true) {
-    needTrace && this.setTraceOfListeners(key, updaters);
-    this.getStream(key).subscribe(next => {
-      if (updaters instanceof Array) {
+  on(keys, updaters, needTrace = true) {
+    keys = toArray(keys);
+    updaters = toArray(updaters);
+    for (let key of keys) {
+      needTrace && this.setTraceOfListeners(key, updaters);
+      this.getStream(key).subscribe(next => {
         for (let updater of updaters) {
           updater(next)
         }
-      } else {
-        updaters(next)
-      }
-    })
+      })
+    }
   }
 
   reOn(key) {

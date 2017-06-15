@@ -1,6 +1,7 @@
 import Store from './store'
 import Stream from './stream'
 import privateMap from './privateMap'
+import {SIMPLE_SETTER} from './config'
 export default class Xvent {
   constructor() {
     privateMap.init(this, {
@@ -22,7 +23,25 @@ export default class Xvent {
   }
 
   on(key, updater) {
-    this.getStreamCollector().on(key, updater)
+    if (updater.UPDATER_TYPE === SIMPLE_SETTER) {
+      this.getStreamCollector().on(key, (next) => {
+        updater.binder[next.key] = next.value
+      })
+    } else {
+      this.getStreamCollector().on(key, updater)
+    }
   }
 
+  bind(key, binder) {
+    this.on(key, Xvent.updater.setter(binder))
+  }
 }
+
+Xvent.updater = {
+  setter(binder){
+    return {
+      UPDATER_TYPE: SIMPLE_SETTER,
+      binder,
+    }
+  }
+};
