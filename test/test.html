@@ -10,17 +10,9 @@
 			border: 1px solid red;
 		}
 	</style>
-	<script src="../dist/index.js"></script>
+	<script src="../test/test.build.js"></script>
 </head>
 <body>
 <div id="test"></div>
-<script>
-	let xvent = new Xvent();
-	let testGroup = xvent.createGroup('click-test');
-	let clickStream = xvent.on('click', document.getElementById('test'), 'hello');
-	let m = testGroup.mergeStream(clickStream).subscribe(next=>{
-		console.log(next)
-	})
-</script>
 </body>
 </html>

@@ -1,6 +1,1 @@
-import Xvent from './src/Xvent/Xvent.core'
-export default Xvent
-
-if (window) {
-	window.Xvent = Xvent
-}
+export {default} from './src/xvent'
