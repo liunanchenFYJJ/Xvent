@@ -2,7 +2,7 @@ import {Subject, Observable} from 'rxjs-es'
 import {toArray} from './tool'
 export default class Stream {
   constructor() {
-    this.listendStreams = new Map()
+    this.updaters = new Map()
   }
 
   getStream(key) {
@@ -15,39 +15,41 @@ export default class Stream {
 
   next(key, value) {
     if (value instanceof Promise) {
-      this.setStream(key, Observable.fromPromise(value).map(value=>({key,value,})));
+      this.setStream(key, Observable.fromPromise(value).map(value => ({key, value,})));
       this.reOn(key)
     } else {
-      this.getStream(key).next({key,value,})
+      this.getStream(key).next({key, value,})
     }
   }
 
-  setTraceOfListeners(key, updaters) {
-    let listeners = this.listendStreams.get(key);
-    if (!listeners) {
-      listeners = []
+  setTraceOfUpdater(key, updater) {
+    let updaters = this.updaters.get(key);
+    if (!updaters) {
+      updaters = []
     }
-    listeners = listeners.concat(updaters);
-    this.listendStreams.set(key, listeners)
+    updaters = updaters.concat(updater);
+    this.updaters.set(key, updaters)
   }
 
-  on(keys, updaters, needTrace = true) {
-    keys = toArray(keys);
-    updaters = toArray(updaters);
-    for (let key of keys) {
-      needTrace && this.setTraceOfListeners(key, updaters);
-      this.getStream(key).subscribe(next => {
-        for (let updater of updaters) {
-          updater(next)
-        }
-      })
-    }
+  on(key, updater, needTrace = true) {
+    let {action, convertToObservable} = updater;
+    needTrace && this.setTraceOfUpdater(key, updater);
+    updater.subscription = this.getStream(key).subscribe(next => {
+      if(convertToObservable){
+        action(Observable.of(next))
+      }else{
+        action(next)
+      }
+    })
   }
 
   reOn(key) {
-    if (this.listendStreams.has(key)) {
-      let listeners = this.listendStreams.get(key);
-      this.on(key, listeners, false)
+    if (this.updaters.has(key)) {
+      let updaters = this.updaters.get(key);
+      for (let updater of updaters) {
+        updater.subscription.unsubscribe();
+        this.on(key, updater)
+      }
     }
   }
 

@@ -14,9 +14,16 @@ let a = {
 };
 x.on('name', [log, log2]);
 x.bind(['age', 'name'], a);
-x.on('location',function(next){
-
-});
+x.on('loc', (observable=>{
+  observable.subscribe({
+    next(val){
+      log(val)
+    },
+    complete(){
+      log('complete')
+    }
+  })
+}), true);
 // store.name = 'luwenxu';
 // store.p=new Promise(resolve=>{
 //   resolve(1)
@@ -25,5 +32,5 @@ x.on('location',function(next){
 //   console.log(next)
 // });
 window.store = store;
-window.a=a;
-window.x=x;
+window.a = a;
+window.x = x;
