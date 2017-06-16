@@ -6,7 +6,7 @@ export default class Store {
       },
       set: (target, key, value, receiver) => {
         xvent.pushIntoStream(key, value);
-        Reflect.set(target, key, value, receiver)
+        return Reflect.set(target, key, value, receiver)
       }
     })
   }

@@ -14,8 +14,7 @@ export default class Stream {
 
   next(key, value) {
     if (value instanceof Promise) {
-      this.setStream(key, Observable.fromPromise(value).map(value => (Observable.of({key,value}))));
-      this.reOn(key)
+      this.getStream(key).next(Observable.fromPromise(value))
     } else {
       this.getStream(key).next(Observable.of({key,value}))
     }
@@ -44,14 +43,15 @@ export default class Stream {
     })
   }
 
-  reOn(key) {
-    if (this.updaters.has(key)) {
-      let updaters = this.updaters.get(key);
-      for (let updater of updaters) {
-        updater.subscription.unsubscribe();
-        this.on(key, updater, false)
+  kill(key, killAll, actions, reOn = false) {
+    let updaters = this.updaters.get(key);
+    for (let updater of updaters) {
+      if (killAll || actions.indexOf(updater.action) !== -1) {
+        updater.subscription.unsubscribe()
+        if (reOn) {
+          this.on(key, updater, false)
+        }
       }
     }
   }
-
 }

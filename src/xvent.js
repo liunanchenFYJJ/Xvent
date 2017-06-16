@@ -3,7 +3,7 @@ import Stream from './stream'
 import privateMap from './privateMap'
 import {toArray} from './tool'
 import {
-  UPDATER_TYPE, UPDATER_SETTER, UPDATER_USER_DEFINE,
+  UPDATER_TYPE, UPDATER_SETTER, UPDATER_USER_DEFINE
 } from './config'
 export default class Xvent {
   constructor() {
@@ -36,35 +36,50 @@ export default class Xvent {
   on(keys, actions, autoAnalyze = true) {
     keys = toArray(keys);
     actions = toArray(actions);
-    let updaters = actions.map(action => {
+    let anonymousUpdaters = actions.map(action => {
       return Xvent.prepareUpdater(action, UPDATER_USER_DEFINE, autoAnalyze)
     });
-    this.dispatchToStream(keys, updaters);
+    this.dispatchToStream(keys, anonymousUpdaters);
   }
 
-  dispatchToStream(keys, updaters) {
+  bind(keys, binders) {
+    this.dispatchToStream(keys, Xvent.updater.setter(binders))
+  }
+
+  dispatchToStream(keys, anonymousUpdaters) {
     for(let key of keys){
-      for(let updater of updaters){
+      for(let updater of anonymousUpdaters){
         this.getStreamCollector().on(key, updater)
       }
     }
   }
 
-  bind(keys, binders, autoAnalyze = true) {
-    this.dispatchToStream(keys, Xvent.updater.setter(binders, autoAnalyze))
+  kill(key, actions = [], reOn = false) {
+    actions = toArray(actions);
+    let killAll = false;
+    if(actions.length === 0){
+      killAll = true;
+    }
+    this.getStreamCollector().kill(key, killAll, actions, reOn)
+  }
+
+  chew(key, actions) {
+    this.kill(key, actions, true);
   }
 }
 
 Xvent.updater = {
-  setter(binders, autoAnalyze){
+  setter(binders){
     binders = toArray(binders);
     return binders.map(binder => {
       return Xvent.prepareUpdater(
-        next => {
-          binder[next.key] = next.value
+        observable => {
+          observable.subscribe(next=>{
+            binder[next.key] = next.value
+          })
         },
         UPDATER_SETTER,
-        autoAnalyze
+        false
       )
     })
   }

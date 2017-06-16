@@ -9,6 +9,16 @@ function log(v) {
 function log2(v) {
   console.log(v, 2)
 }
+function log3(v) {
+  console.log(v, 3)
+}
+function ajax(result, delay) {
+  return new Promise((resolve,reject) => {
+    setTimeout(() => {
+      resolve(result)
+    }, delay)
+  })
+}
 let a = {
   name: 'shujia'
 };
@@ -23,14 +33,21 @@ x.on('loc', (observable=>{
       log('complete')
     }
   })
-}), true);
-// store.name = 'luwenxu';
-// store.p=new Promise(resolve=>{
-//   resolve(1)
-// });
-// x.on('p',next=>{
-//   console.log(next)
-// });
+}),false);
+
+x.kill('name', log);
+x.chew('name', log3);
+store.name = 'luwenxu';
+
+//store.loc = new Promise((resolve) => {
+//  resolve('suzhou')
+//})
+
+
+let p1 = ajax('p1', 1000);
+let p2 = ajax('p2', 2000);
+//store.loc = Promise.all([p1, p2]);
+
 window.store = store;
 window.a = a;
 window.x = x;

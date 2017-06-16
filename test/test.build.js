@@ -5170,7 +5170,7 @@ var Store = function Store(xvent) {
     },
     set: function set(target, key, value, receiver) {
       xvent.pushIntoStream(key, value);
-      Reflect.set(target, key, value, receiver);
+      return Reflect.set(target, key, value, receiver);
     }
   });
 };
@@ -5215,10 +5215,7 @@ var Stream = function () {
     key: 'next',
     value: function next(key, value) {
       if (value instanceof Promise) {
-        this.setStream(key, _rxjsEs.Observable.fromPromise(value).map(function (value) {
-          return _rxjsEs.Observable.of({ key: key, value: value });
-        }));
-        this.reOn(key);
+        this.getStream(key).next(_rxjsEs.Observable.fromPromise(value));
       } else {
         this.getStream(key).next(_rxjsEs.Observable.of({ key: key, value: value }));
       }
@@ -5252,33 +5249,37 @@ var Stream = function () {
       });
     }
   }, {
-    key: 'reOn',
-    value: function reOn(key) {
-      if (this.updaters.has(key)) {
-        var updaters = this.updaters.get(key);
-        var _iteratorNormalCompletion = true;
-        var _didIteratorError = false;
-        var _iteratorError = undefined;
+    key: 'kill',
+    value: function kill(key, killAll, actions) {
+      var reOn = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : false;
 
-        try {
-          for (var _iterator = updaters[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-            var updater = _step.value;
+      var updaters = this.updaters.get(key);
+      var _iteratorNormalCompletion = true;
+      var _didIteratorError = false;
+      var _iteratorError = undefined;
 
+      try {
+        for (var _iterator = updaters[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+          var updater = _step.value;
+
+          if (killAll || actions.indexOf(updater.action) !== -1) {
             updater.subscription.unsubscribe();
-            this.on(key, updater, false);
+            if (reOn) {
+              this.on(key, updater, false);
+            }
           }
-        } catch (err) {
-          _didIteratorError = true;
-          _iteratorError = err;
+        }
+      } catch (err) {
+        _didIteratorError = true;
+        _iteratorError = err;
+      } finally {
+        try {
+          if (!_iteratorNormalCompletion && _iterator.return) {
+            _iterator.return();
+          }
         } finally {
-          try {
-            if (!_iteratorNormalCompletion && _iterator.return) {
-              _iterator.return();
-            }
-          } finally {
-            if (_didIteratorError) {
-              throw _iteratorError;
-            }
+          if (_didIteratorError) {
+            throw _iteratorError;
           }
         }
       }
@@ -5370,14 +5371,19 @@ var Xvent = function () {
 
       keys = (0, _tool.toArray)(keys);
       actions = (0, _tool.toArray)(actions);
-      var updaters = actions.map(function (action) {
+      var anonymousUpdaters = actions.map(function (action) {
         return Xvent.prepareUpdater(action, _config.UPDATER_USER_DEFINE, autoAnalyze);
       });
-      this.dispatchToStream(keys, updaters);
+      this.dispatchToStream(keys, anonymousUpdaters);
+    }
+  }, {
+    key: 'bind',
+    value: function bind(keys, binders) {
+      this.dispatchToStream(keys, Xvent.updater.setter(binders));
     }
   }, {
     key: 'dispatchToStream',
-    value: function dispatchToStream(keys, updaters) {
+    value: function dispatchToStream(keys, anonymousUpdaters) {
       var _iteratorNormalCompletion = true;
       var _didIteratorError = false;
       var _iteratorError = undefined;
@@ -5390,7 +5396,7 @@ var Xvent = function () {
           var _iteratorError2 = undefined;
 
           try {
-            for (var _iterator2 = updaters[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+            for (var _iterator2 = anonymousUpdaters[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
               var updater = _step2.value;
 
               this.getStreamCollector().on(key, updater);
@@ -5426,11 +5432,22 @@ var Xvent = function () {
       }
     }
   }, {
-    key: 'bind',
-    value: function bind(keys, binders) {
-      var autoAnalyze = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : true;
+    key: 'kill',
+    value: function kill(key) {
+      var actions = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : [];
+      var reOn = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : false;
 
-      this.dispatchToStream(keys, Xvent.updater.setter(binders, autoAnalyze));
+      actions = (0, _tool.toArray)(actions);
+      var killAll = false;
+      if (actions.length === 0) {
+        killAll = true;
+      }
+      this.getStreamCollector().kill(key, killAll, actions, reOn);
+    }
+  }, {
+    key: 'chew',
+    value: function chew(key, actions) {
+      this.kill(key, actions, true);
     }
   }], [{
     key: 'prepareUpdater',
@@ -5450,12 +5467,14 @@ exports.default = Xvent;
 
 
 Xvent.updater = {
-  setter: function setter(binders, autoAnalyze) {
+  setter: function setter(binders) {
     binders = (0, _tool.toArray)(binders);
     return binders.map(function (binder) {
-      return Xvent.prepareUpdater(function (next) {
-        binder[next.key] = next.value;
-      }, _config.UPDATER_SETTER, autoAnalyze);
+      return Xvent.prepareUpdater(function (observable) {
+        observable.subscribe(function (next) {
+          binder[next.key] = next.value;
+        });
+      }, _config.UPDATER_SETTER, false);
     });
   }
 };
@@ -5483,6 +5502,16 @@ function log(v) {
 function log2(v) {
   console.log(v, 2);
 }
+function log3(v) {
+  console.log(v, 3);
+}
+function ajax(result, delay) {
+  return new Promise(function (resolve, reject) {
+    setTimeout(function () {
+      resolve(result);
+    }, delay);
+  });
+}
 var a = {
   name: 'shujia'
 };
@@ -5497,14 +5526,21 @@ x.on('loc', function (observable) {
       log('complete');
     }
   });
-}, true);
-// store.name = 'luwenxu';
-// store.p=new Promise(resolve=>{
-//   resolve(1)
-// });
-// x.on('p',next=>{
-//   console.log(next)
-// });
+}, false);
+
+x.kill('name', log);
+x.chew('name', log3);
+store.name = 'luwenxu';
+
+//store.loc = new Promise((resolve) => {
+//  resolve('suzhou')
+//})
+
+
+var p1 = ajax('p1', 1000);
+var p2 = ajax('p2', 2000);
+//store.loc = Promise.all([p1, p2]);
+
 window.store = store;
 window.a = a;
 window.x = x;
