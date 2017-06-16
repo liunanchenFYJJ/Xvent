@@ -4,7 +4,6 @@ import privateMap from './privateMap'
 import {toArray} from './tool'
 import {
   UPDATER_TYPE, UPDATER_SETTER, UPDATER_USER_DEFINE,
-  CONVERT_TO_OBSERVABLE
 } from './config'
 export default class Xvent {
   constructor() {
@@ -14,11 +13,11 @@ export default class Xvent {
     })
   }
 
-  static prepareUpdater(action, updaterType, convertToObservable) {
+  static prepareUpdater(action, updaterType, autoAnalyze) {
     return {
       action,
       updaterType,
-      convertToObservable,
+      autoAnalyze,
     }
   }
 
@@ -34,11 +33,11 @@ export default class Xvent {
     return privateMap.get(this, 'streamCollector')
   }
 
-  on(keys, actions, convertToObservable = false) {
+  on(keys, actions, autoAnalyze = true) {
     keys = toArray(keys);
     actions = toArray(actions);
     let updaters = actions.map(action => {
-      return Xvent.prepareUpdater(action, UPDATER_USER_DEFINE, convertToObservable)
+      return Xvent.prepareUpdater(action, UPDATER_USER_DEFINE, autoAnalyze)
     });
     this.dispatchToStream(keys, updaters);
   }
@@ -51,13 +50,13 @@ export default class Xvent {
     }
   }
 
-  bind(keys, binders, convertToObservable = false) {
-    this.dispatchToStream(keys, Xvent.updater.setter(binders, convertToObservable))
+  bind(keys, binders, autoAnalyze = true) {
+    this.dispatchToStream(keys, Xvent.updater.setter(binders, autoAnalyze))
   }
 }
 
 Xvent.updater = {
-  setter(binders, convertToObservable){
+  setter(binders, autoAnalyze){
     binders = toArray(binders);
     return binders.map(binder => {
       return Xvent.prepareUpdater(
@@ -65,7 +64,7 @@ Xvent.updater = {
           binder[next.key] = next.value
         },
         UPDATER_SETTER,
-        convertToObservable
+        autoAnalyze
       )
     })
   }

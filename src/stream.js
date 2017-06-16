@@ -1,5 +1,4 @@
 import {Subject, Observable} from 'rxjs-es'
-import {toArray} from './tool'
 export default class Stream {
   constructor() {
     this.updaters = new Map()
@@ -15,10 +14,10 @@ export default class Stream {
 
   next(key, value) {
     if (value instanceof Promise) {
-      this.setStream(key, Observable.fromPromise(value).map(value => ({key, value,})));
+      this.setStream(key, Observable.fromPromise(value).map(value => (Observable.of({key,value}))));
       this.reOn(key)
     } else {
-      this.getStream(key).next({key, value,})
+      this.getStream(key).next(Observable.of({key,value}))
     }
   }
 
@@ -32,13 +31,15 @@ export default class Stream {
   }
 
   on(key, updater, needTrace = true) {
-    let {action, convertToObservable} = updater;
+    let {action, autoAnalyze} = updater;
     needTrace && this.setTraceOfUpdater(key, updater);
-    updater.subscription = this.getStream(key).subscribe(next => {
-      if(convertToObservable){
-        action(Observable.of(next))
+    updater.subscription = this.getStream(key).subscribe(observable => {
+      if(autoAnalyze){
+        observable.subscribe(next=>{
+          action(next.value)
+        })
       }else{
-        action(next)
+        action(observable)
       }
     })
   }
@@ -48,7 +49,7 @@ export default class Stream {
       let updaters = this.updaters.get(key);
       for (let updater of updaters) {
         updater.subscription.unsubscribe();
-        this.on(key, updater)
+        this.on(key, updater, false)
       }
     }
   }
