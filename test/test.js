@@ -22,6 +22,14 @@ function ajax(result, delay) {
 let a = {
   name: 'shujia'
 };
+
+x.customize('age', origin => {
+  return origin.map(v => {
+    let r = Xvent.to('age',v.value * 10);
+    console.log(r);
+    return r
+  })
+});
 x.on('name', [log, log2]);
 x.on('age',log);
 x.bind(['age', 'name'], a);
@@ -36,9 +44,9 @@ x.on('loc', (observable => {
   })
 }), false);
 
-x.kill(['name','age'], log);
+// x.kill(['name','age'], log);
 // x.chew('name', log3);//如果原先不存在这个监听函数，那么什么都不会发生
-store.name = 'luwenxu';
+// store.name = 'luwenxu';
 
 //store.loc = new Promise((resolve) => {
 //  resolve('suzhou')

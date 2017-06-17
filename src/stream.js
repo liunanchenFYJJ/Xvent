@@ -4,19 +4,20 @@ export default class Stream {
     this.updaters = new Map()
   }
 
-  getStream(key) {
+  getOrigin(key) {
     return this[key] || (this[key] = new Subject())
   }
 
-  setStream(key, stream) {
-    return (this[key] = stream)
+  setOrigin(key, origin) {
+    return (this[key] = origin)
   }
 
   next(key, value) {
     if (value instanceof Promise) {
-      this.getStream(key).next(Observable.fromPromise(value))
+      this.getOrigin(key).next(
+        Observable.fromPromise(value).map(value => ({key, value})))
     } else {
-      this.getStream(key).next(Observable.of({key,value}))
+      this.getOrigin(key).next({key, value})
     }
   }
 
@@ -29,19 +30,22 @@ export default class Stream {
     this.updaters.set(key, updaters)
   }
 
-  on(key, updater, needTrace = true) {
-    let {action, autoAnalyze} = updater;
+  customize(key, func) {
+    this.setOrigin(key, func(this.getOrigin(key)));
+  }
+
+  on(updater, needTrace = true) {
+    let {key, action, autoAnalyze} = updater;
     needTrace && this.setTraceOfUpdater(key, updater);
-    updater.key = key;
-    updater.subscription = this.getStream(key).subscribe(observable => {
-      if(autoAnalyze){
-        observable.subscribe(next=>{
-          action(next.value)
-        })
-      }else{
-        action(observable)
+    let origin = this.getOrigin(key);
+    updater.subscription = this.getOrigin(key).subscribe(next => {
+      if (autoAnalyze) {
+        action(next.value)
+      } else {
+        action(next)
       }
-    })
+    });
+    return origin
   }
 
   /**
@@ -57,7 +61,7 @@ export default class Stream {
       if (killAll || actions.indexOf(updater.action) !== -1) {
         updater.subscription.unsubscribe();
         if (reOn) {
-          this.on(key, updater, false)
+          this.on(updater, false)
         }
       }
     }
