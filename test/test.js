@@ -13,7 +13,7 @@ function log3(v) {
   console.log(v, 3)
 }
 function ajax(result, delay) {
-  return new Promise((resolve,reject) => {
+  return new Promise((resolve, reject) => {
     setTimeout(() => {
       resolve(result)
     }, delay)
@@ -23,8 +23,9 @@ let a = {
   name: 'shujia'
 };
 x.on('name', [log, log2]);
+x.on('age',log);
 x.bind(['age', 'name'], a);
-x.on('loc', (observable=>{
+x.on('loc', (observable => {
   observable.subscribe({
     next(val){
       log(val)
@@ -33,10 +34,10 @@ x.on('loc', (observable=>{
       log('complete')
     }
   })
-}),false);
+}), false);
 
-x.kill('name', log);
-x.chew('name', log3);
+x.kill(['name','age'], log);
+// x.chew('name', log3);//如果原先不存在这个监听函数，那么什么都不会发生
 store.name = 'luwenxu';
 
 //store.loc = new Promise((resolve) => {

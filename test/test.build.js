@@ -5238,6 +5238,7 @@ var Stream = function () {
           autoAnalyze = updater.autoAnalyze;
 
       needTrace && this.setTraceOfUpdater(key, updater);
+      updater.key = key;
       updater.subscription = this.getStream(key).subscribe(function (observable) {
         if (autoAnalyze) {
           observable.subscribe(function (next) {
@@ -5248,6 +5249,15 @@ var Stream = function () {
         }
       });
     }
+
+    /**
+     * 取消订阅
+     * @param key{string} 需要取消的源
+     * @param killAll{boolean} 是否取消所有订阅
+     * @param actions{Array} 需要取消的订阅函数。只有当killAll为false的时候才生效
+     * @param reOn{boolean} 是否重新订阅
+     */
+
   }, {
     key: 'kill',
     value: function kill(key, killAll, actions) {
@@ -5327,6 +5337,10 @@ var _stream = __webpack_require__(69);
 
 var _stream2 = _interopRequireDefault(_stream);
 
+var _updater = __webpack_require__(355);
+
+var _updater2 = _interopRequireDefault(_updater);
+
 var _privateMap = __webpack_require__(67);
 
 var _privateMap2 = _interopRequireDefault(_privateMap);
@@ -5372,7 +5386,7 @@ var Xvent = function () {
       keys = (0, _tool.toArray)(keys);
       actions = (0, _tool.toArray)(actions);
       var anonymousUpdaters = actions.map(function (action) {
-        return Xvent.prepareUpdater(action, _config.UPDATER_USER_DEFINE, autoAnalyze);
+        return new _updater2.default(action, _config.UPDATER_USER_DEFINE, autoAnalyze);
       });
       this.dispatchToStream(keys, anonymousUpdaters);
     }
@@ -5381,6 +5395,16 @@ var Xvent = function () {
     value: function bind(keys, binders) {
       this.dispatchToStream(keys, Xvent.updater.setter(binders));
     }
+  }, {
+    key: 'unbind',
+    value: function unbind(keys, binders) {}
+
+    /**
+     * 订阅转发到stream
+     * @param keys 订阅源
+     * @param anonymousUpdaters 订阅配置
+     */
+
   }, {
     key: 'dispatchToStream',
     value: function dispatchToStream(keys, anonymousUpdaters) {
@@ -5433,30 +5457,45 @@ var Xvent = function () {
     }
   }, {
     key: 'kill',
-    value: function kill(key) {
+    value: function kill(keys) {
       var actions = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : [];
       var reOn = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : false;
 
+      keys = (0, _tool.toArray)(keys);
       actions = (0, _tool.toArray)(actions);
       var killAll = false;
       if (actions.length === 0) {
         killAll = true;
       }
-      this.getStreamCollector().kill(key, killAll, actions, reOn);
+      var _iteratorNormalCompletion3 = true;
+      var _didIteratorError3 = false;
+      var _iteratorError3 = undefined;
+
+      try {
+        for (var _iterator3 = keys[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
+          var key = _step3.value;
+
+          this.getStreamCollector().kill(key, killAll, actions, reOn);
+        }
+      } catch (err) {
+        _didIteratorError3 = true;
+        _iteratorError3 = err;
+      } finally {
+        try {
+          if (!_iteratorNormalCompletion3 && _iterator3.return) {
+            _iterator3.return();
+          }
+        } finally {
+          if (_didIteratorError3) {
+            throw _iteratorError3;
+          }
+        }
+      }
     }
   }, {
     key: 'chew',
-    value: function chew(key, actions) {
-      this.kill(key, actions, true);
-    }
-  }], [{
-    key: 'prepareUpdater',
-    value: function prepareUpdater(action, updaterType, autoAnalyze) {
-      return {
-        action: action,
-        updaterType: updaterType,
-        autoAnalyze: autoAnalyze
-      };
+    value: function chew(keys, actions) {
+      this.kill(keys, actions, true);
     }
   }]);
 
@@ -5467,14 +5506,18 @@ exports.default = Xvent;
 
 
 Xvent.updater = {
+  /**
+   * 生成订阅配置对象
+   * @param binders
+   */
   setter: function setter(binders) {
     binders = (0, _tool.toArray)(binders);
     return binders.map(function (binder) {
-      return Xvent.prepareUpdater(function (observable) {
+      return new _updater2.default(function (observable) {
         observable.subscribe(function (next) {
           binder[next.key] = next.value;
         });
-      }, _config.UPDATER_SETTER, false);
+      }, _config.UPDATER_SETTER, false, binder);
     });
   }
 };
@@ -5516,6 +5559,7 @@ var a = {
   name: 'shujia'
 };
 x.on('name', [log, log2]);
+x.on('age', log);
 x.bind(['age', 'name'], a);
 x.on('loc', function (observable) {
   observable.subscribe({
@@ -5528,8 +5572,8 @@ x.on('loc', function (observable) {
   });
 }, false);
 
-x.kill('name', log);
-x.chew('name', log3);
+x.kill(['name', 'age'], log);
+// x.chew('name', log3);//如果原先不存在这个监听函数，那么什么都不会发生
 store.name = 'luwenxu';
 
 //store.loc = new Promise((resolve) => {
@@ -18683,6 +18727,43 @@ function toSubscriber(nextOrObserver, error, complete) {
 }(typeof self === "undefined" ? typeof global === "undefined" ? this : global : self));
 
 /* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(64), __webpack_require__(73)))
+
+/***/ }),
+/* 355 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+/**
+ * Created by luwenxu on 2017/6/17.
+ */
+var Updater =
+/**
+ * 构造函数。
+ * @param action{function} 订阅函数
+ * @param updaterType{string} 订阅类型
+ * @param autoAnalyze{boolean} 自动解析
+ * @param binder{object} 更新绑定对象
+ */
+function Updater(action, updaterType, autoAnalyze) {
+  var binder = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : null;
+
+  _classCallCheck(this, Updater);
+
+  this.action = action;
+  this.updaterType = updaterType;
+  this.autoAnalyze = autoAnalyze;
+  this.binder = binder;
+};
+
+exports.default = Updater;
 
 /***/ })
 /******/ ]);
