@@ -1,6 +1,6 @@
 {
   "name": "xvent",
-  "version": "2.2.1",
+  "version": "2.2.2",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -22,7 +22,6 @@
   },
   "homepage": "https://github.com/luwenxull/Xvent#readme",
   "dependencies": {
-    "hammerjs": "^2.0.8",
     "rxjs-es": "^5.0.0-beta.12"
   },
   "devDependencies": {
