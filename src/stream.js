@@ -13,11 +13,21 @@ export default class Stream {
   }
 
   next(key, value) {
+    let origin = this.getOrigin(key);
     if (value instanceof Promise) {
-      this.getOrigin(key).next(
-        Observable.fromPromise(value).map(value => ({key, value})))
+      Observable.fromPromise(value).subscribe({
+        next(result){
+          origin.next({key, value:result})
+        },
+        error(){
+          origin.error()
+        },
+        complete(){
+          origin.complete()
+        },
+      });
     } else {
-      this.getOrigin(key).next({key, value})
+      origin.next({key, value})
     }
   }
 
