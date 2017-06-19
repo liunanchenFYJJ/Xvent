@@ -1,11 +1,12 @@
 {
   "name": "xvent",
-  "version": "2.2.3",
+  "version": "2.2.4",
   "description": "",
   "main": "index.js",
   "scripts": {
     "build:dev": "./node_modules/.bin/webpack --env=dev --progress --profile --colors -w",
-    "build:test": "./node_modules/.bin/webpack --env=test --progress --profile --colors -w"
+    "build:test": "./node_modules/.bin/webpack --env=test --progress --profile --colors -w",
+    "build:dist": "./node_modules/.bin/babel src -d dist"
   },
   "repository": {
     "type": "git",
@@ -22,11 +23,14 @@
   },
   "homepage": "https://github.com/luwenxull/Xvent#readme",
   "dependencies": {
+    "babel-runtime": "^6.23.0",
     "rxjs-es": "^5.0.0-beta.12"
   },
   "devDependencies": {
+    "babel-cli": "^6.24.1",
     "babel-core": "^6.25.0",
     "babel-loader": "^7.0.0",
+    "babel-plugin-transform-runtime": "^6.23.0",
     "babel-preset-env": "^1.5.2",
     "webpack": "^2.6.1"
   }
