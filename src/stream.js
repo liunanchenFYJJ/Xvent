@@ -1,4 +1,6 @@
 import {Subject, Observable} from 'rxjs-es'
+import {store_nameSpace} from './store'
+import {nameSpaceRegex} from './regex'
 export default class Stream {
   constructor() {
     this.updaters = new Map()
@@ -12,12 +14,12 @@ export default class Stream {
     return (this[key] = origin)
   }
 
-  next(key, value) {
-    let origin = this.getOrigin(key);
+  next(key, value, nameSpace) {
+    let origin = this.getOrigin(nameSpace + key);
     if (value instanceof Promise) {
       Observable.fromPromise(value).subscribe({
         next(result){
-          origin.next({key, value:result})
+          origin.next({key, value: result})
         },
         error(){
           origin.error()

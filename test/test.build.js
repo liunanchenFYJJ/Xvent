@@ -6592,7 +6592,9 @@ var XventCore = function () {
   (0, _createClass3.default)(XventCore, [{
     key: 'pushIntoStream',
     value: function pushIntoStream(key, value) {
-      this.getStreamCollector().next(key, value);
+      var nameSpace = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : '';
+
+      this.getStreamCollector().next(key, value, nameSpace);
     }
   }, {
     key: 'getStore',
@@ -6905,6 +6907,7 @@ exports.default = {
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+exports.store_nameSpace = undefined;
 
 var _set = __webpack_require__(134);
 
@@ -6920,16 +6923,21 @@ var _classCallCheck3 = _interopRequireDefault(_classCallCheck2);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
+var store_nameSpace = exports.store_nameSpace = {};
+
 var Store = function Store(xvent) {
   var nameSpace = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : '';
   (0, _classCallCheck3.default)(this, Store);
 
+  if (nameSpace) {
+    store_nameSpace[nameSpace] = true;
+  }
   return new Proxy({}, {
     get: function get(target, key, receiver) {
       return (0, _get2.default)(target, key, receiver);
     },
     set: function set(target, key, value, receiver) {
-      xvent.pushIntoStream(nameSpace + key, value);
+      xvent.pushIntoStream(key, value, nameSpace);
       return (0, _set2.default)(target, key, value, receiver);
     }
   });
@@ -6970,6 +6978,10 @@ var _createClass3 = _interopRequireDefault(_createClass2);
 
 var _rxjsEs = __webpack_require__(78);
 
+var _store = __webpack_require__(126);
+
+var _regex = __webpack_require__(455);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 var Stream = function () {
@@ -6991,8 +7003,8 @@ var Stream = function () {
     }
   }, {
     key: 'next',
-    value: function next(key, value) {
-      var origin = this.getOrigin(key);
+    value: function next(key, value, nameSpace) {
+      var origin = this.getOrigin(nameSpace + key);
       if (value instanceof _promise2.default) {
         _rxjsEs.Observable.fromPromise(value).subscribe({
           next: function next(result) {
@@ -7247,10 +7259,15 @@ var p2 = ajax('suzhou', 2000);
 // store.loc = 'nanjing';
 
 //store.loc = Promise.all([p1, p2]);
+var b = {};
 
 var you = x.nameSpace('you');
-x.on('you:name', log);
+x.on('name', log); //没有反应
+x.on('you:name', log, false);
+x.bind('you:age', b);
 you.name = 'lovely daidai';
+you.age = 10;
+console.log(b);
 
 window.store = store;
 window.a = a;
@@ -21260,6 +21277,18 @@ function toSubscriber(nextOrObserver, error, complete) {
 }(typeof self === "undefined" ? typeof global === "undefined" ? this : global : self));
 
 /* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(122), __webpack_require__(174)))
+
+/***/ }),
+/* 455 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+var nameSpaceRegex = exports.nameSpaceRegex = /\b\w+:/;
 
 /***/ })
 /******/ ]);

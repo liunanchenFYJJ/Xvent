@@ -14,8 +14,8 @@ class XventCore {
     })
   }
 
-  pushIntoStream(key, value) {
-    this.getStreamCollector().next(key, value)
+  pushIntoStream(key, value, nameSpace='') {
+    this.getStreamCollector().next(key, value, nameSpace)
   }
 
   getStore() {

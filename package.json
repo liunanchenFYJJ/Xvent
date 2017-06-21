@@ -1,11 +1,12 @@
 {
   "name": "xvent",
-  "version": "2.3.1",
+  "version": "2.3.2",
   "description": "",
   "main": "index.js",
   "scripts": {
     "build:test": "./node_modules/.bin/webpack --env=test --progress --profile --colors -w",
-    "build:dist": "./node_modules/.bin/babel src -d dist"
+    "build:dist": "./node_modules/.bin/babel src -d dist",
+    "pub": "npm run build:dist && npm publish"
   },
   "repository": {
     "type": "git",

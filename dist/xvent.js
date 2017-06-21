@@ -51,7 +51,9 @@ var XventCore = function () {
   (0, _createClass3.default)(XventCore, [{
     key: 'pushIntoStream',
     value: function pushIntoStream(key, value) {
-      this.getStreamCollector().next(key, value);
+      var nameSpace = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : '';
+
+      this.getStreamCollector().next(key, value, nameSpace);
     }
   }, {
     key: 'getStore',

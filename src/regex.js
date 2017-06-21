@@ -1,1 +1,1 @@
-export let noPublish = /^::/;
+export let nameSpaceRegex = /\b\w+:/;

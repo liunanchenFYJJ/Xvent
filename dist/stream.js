@@ -26,6 +26,10 @@ var _createClass3 = _interopRequireDefault(_createClass2);
 
 var _rxjsEs = require('rxjs-es');
 
+var _store = require('./store');
+
+var _regex = require('./regex');
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 var Stream = function () {
@@ -47,8 +51,8 @@ var Stream = function () {
     }
   }, {
     key: 'next',
-    value: function next(key, value) {
-      var origin = this.getOrigin(key);
+    value: function next(key, value, nameSpace) {
+      var origin = this.getOrigin(nameSpace + key);
       if (value instanceof _promise2.default) {
         _rxjsEs.Observable.fromPromise(value).subscribe({
           next: function next(result) {

@@ -3,6 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+exports.store_nameSpace = undefined;
 
 var _set = require('babel-runtime/core-js/reflect/set');
 
@@ -18,16 +19,21 @@ var _classCallCheck3 = _interopRequireDefault(_classCallCheck2);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
+var store_nameSpace = exports.store_nameSpace = {};
+
 var Store = function Store(xvent) {
   var nameSpace = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : '';
   (0, _classCallCheck3.default)(this, Store);
 
+  if (nameSpace) {
+    store_nameSpace[nameSpace] = true;
+  }
   return new Proxy({}, {
     get: function get(target, key, receiver) {
       return (0, _get2.default)(target, key, receiver);
     },
     set: function set(target, key, value, receiver) {
-      xvent.pushIntoStream(nameSpace + key, value);
+      xvent.pushIntoStream(key, value, nameSpace);
       return (0, _set2.default)(target, key, value, receiver);
     }
   });

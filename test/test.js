@@ -63,10 +63,15 @@ let p2 = ajax('suzhou', 2000);
 // store.loc = 'nanjing';
 
 //store.loc = Promise.all([p1, p2]);
+let b={};
 
 let you = x.nameSpace('you');
-x.on('you:name', log);
+x.on('name',log);//没有反应
+x.on('you:name', log, false);
+x.bind('you:age',b);
 you.name = 'lovely daidai';
+you.age=10;
+console.log(b);
 
 window.store = store;
 window.a = a;

@@ -3,4 +3,4 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-var noPublish = exports.noPublish = /^::/;
+var nameSpaceRegex = exports.nameSpaceRegex = /\b\w+:/;
