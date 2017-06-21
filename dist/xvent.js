@@ -34,15 +34,13 @@ var _privateMap2 = _interopRequireDefault(_privateMap);
 
 var _tool = require('./tool');
 
-var _rxjsEs = require('rxjs-es');
-
 var _config = require('./config');
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-var Xvent = function () {
-  function Xvent() {
-    (0, _classCallCheck3.default)(this, Xvent);
+var XventCore = function () {
+  function XventCore() {
+    (0, _classCallCheck3.default)(this, XventCore);
 
     _privateMap2.default.init(this, {
       store: new _store2.default(this),
@@ -50,7 +48,7 @@ var Xvent = function () {
     });
   }
 
-  (0, _createClass3.default)(Xvent, [{
+  (0, _createClass3.default)(XventCore, [{
     key: 'pushIntoStream',
     value: function pushIntoStream(key, value) {
       this.getStreamCollector().next(key, value);
@@ -168,7 +166,7 @@ var Xvent = function () {
             for (var _iterator5 = (0, _getIterator3.default)(binders), _step5; !(_iteratorNormalCompletion5 = (_step5 = _iterator5.next()).done); _iteratorNormalCompletion5 = true) {
               var binder = _step5.value;
 
-              this.dispatchToStream(Xvent.updater.setter(key, binder));
+              this.dispatchToStream(XventCore.updater.setter(key, binder));
             }
           } catch (err) {
             _didIteratorError5 = true;
@@ -245,6 +243,13 @@ var Xvent = function () {
         }
       }
     }
+
+    /**
+     * 立即取消当前的订阅，并自动重新订阅
+     * @param keys
+     * @param actions
+     */
+
   }, {
     key: 'chew',
     value: function chew(keys, actions) {
@@ -252,20 +257,22 @@ var Xvent = function () {
     }
   }, {
     key: 'unbind',
-    value: function unbind(keys, binders) {}
-  }], [{
-    key: 'to',
-    value: function to(key, value) {
-      return { key: key, value: value };
+    value: function unbind(keys) {
+      var binders = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : [];
+
+      keys = (0, _tool.toArray)(keys);
+      binders = (0, _tool.toArray)(binders);
+    }
+  }, {
+    key: 'nameSpace',
+    value: function nameSpace(name) {
+      return this.getStore()[name] = new _store2.default(this, name + ':');
     }
   }]);
-  return Xvent;
+  return XventCore;
 }();
 
-exports.default = Xvent;
-
-
-Xvent.updater = {
+XventCore.updater = {
   /**
    * 生成订阅配置对象
    * @param key
@@ -273,8 +280,18 @@ Xvent.updater = {
    */
   setter: function setter(key, binder) {
     return new _updater2.default(key, function (next) {
-      console.log(next);
       binder[next.key] = next.value;
     }, _config.UPDATER_SETTER, false, binder);
   }
 };
+
+function XFactory() {
+  var x = void 0;
+  return function () {
+    if (!x) {
+      x = new XventCore();
+    }
+    return x;
+  };
+}
+exports.default = XFactory();

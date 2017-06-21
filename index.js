@@ -1,1 +1,1 @@
-export {default} from './src/xvent'
+export {default} from './dist/xvent'

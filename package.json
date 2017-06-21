@@ -1,10 +1,9 @@
 {
   "name": "xvent",
-  "version": "2.2.4",
+  "version": "2.3.1",
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build:dev": "./node_modules/.bin/webpack --env=dev --progress --profile --colors -w",
     "build:test": "./node_modules/.bin/webpack --env=test --progress --profile --colors -w",
     "build:dist": "./node_modules/.bin/babel src -d dist"
   },

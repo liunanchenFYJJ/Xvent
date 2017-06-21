@@ -3,20 +3,15 @@ import Stream from './stream'
 import Updater from './updater'
 import privateMap from './privateMap'
 import {toArray} from './tool'
-import {Observable} from 'rxjs-es'
 import {
-  UPDATER_TYPE, UPDATER_SETTER, UPDATER_USER_DEFINE
+  UPDATER_SETTER, UPDATER_USER_DEFINE
 } from './config'
-export default class Xvent {
+class XventCore {
   constructor() {
     privateMap.init(this, {
       store: new Store(this),
       streamCollector: new Stream(),
     })
-  }
-
-  static to(key, value) {
-    return {key, value}
   }
 
   pushIntoStream(key, value) {
@@ -53,7 +48,7 @@ export default class Xvent {
     binders = toArray(binders);
     for (let key of keys) {
       for (let binder of binders) {
-        this.dispatchToStream(Xvent.updater.setter(key, binder))
+        this.dispatchToStream(XventCore.updater.setter(key, binder))
       }
     }
   }
@@ -75,16 +70,27 @@ export default class Xvent {
     }
   }
 
+  /**
+   * 立即取消当前的订阅，并自动重新订阅
+   * @param keys
+   * @param actions
+   */
   chew(keys, actions) {
     this.kill(keys, actions, true);
   }
 
-  unbind(keys, binders) {
+  unbind(keys, binders = []) {
+    keys = toArray(keys);
+    binders = toArray(binders);
 
+  }
+
+  nameSpace(name) {
+    return this.getStore()[name] = new Store(this, name + ':')
   }
 }
 
-Xvent.updater = {
+XventCore.updater = {
   /**
    * 生成订阅配置对象
    * @param key
@@ -94,7 +100,6 @@ Xvent.updater = {
     return new Updater(
       key,
       next => {
-        console.log(next);
         binder[next.key] = next.value
       },
       UPDATER_SETTER,
@@ -103,3 +108,14 @@ Xvent.updater = {
     )
   }
 };
+
+function XFactory() {
+  let x;
+  return function () {
+    if (!x) {
+      x = new XventCore()
+    }
+    return x
+  }
+}
+export default XFactory()

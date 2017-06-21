@@ -1,6 +1,8 @@
-import Xvent from '../index'
+import Xvent from '../src/xvent'
 import {Observable} from 'rxjs-es'
-let x = new Xvent();
+let x = Xvent();
+let y = Xvent();
+console.log(x===y);
 
 let store = x.getStore();
 
@@ -28,7 +30,10 @@ x.customize('age', origin => {
   return origin
     .map(r => {
       console.log('customize:', r);
-      return Xvent.to(r.key, r.value * 10);
+      return {
+        key: r.key,
+        value: r.value * 10,
+      }
     })
 });
 
@@ -41,10 +46,10 @@ x.customize('loc', origin => {
 });
 x.on('name', [log, log2]);
 x.on('age', [log]);
-x.on('loc', log, false);
+// x.on('loc', log, false);
 // x.bind(['age', 'name'], a);
 
-// x.kill(['name','age'], log);
+x.kill(['name', 'age'], log);
 // x.chew('name', log3);//如果原先不存在这个监听函数，那么什么都不会发生
 // store.name = 'luwenxu';
 
@@ -52,12 +57,16 @@ x.on('loc', log, false);
 let p1 = ajax(10, 2000);
 let p2 = ajax('suzhou', 2000);
 
-store.age = p1;
-store.loc = 'suzhou';
-store.loc = 'nantong';
-store.loc = 'nanjing';
+// store.age = p1;
+// store.loc = 'suzhou';
+// store.loc = 'nantong';
+// store.loc = 'nanjing';
 
 //store.loc = Promise.all([p1, p2]);
+
+let you = x.nameSpace('you');
+x.on('you:name', log);
+you.name = 'lovely daidai';
 
 window.store = store;
 window.a = a;
