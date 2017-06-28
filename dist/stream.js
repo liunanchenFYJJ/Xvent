@@ -108,13 +108,13 @@ var Stream = function () {
      * 取消订阅
      * @param key{string} 需要取消的源
      * @param killAll{boolean} 是否取消所有订阅
-     * @param actions{Array} 需要取消的订阅函数。只有当killAll为false的时候才生效
+     * @param unSub{Array} 需要取消的订阅函数。只有当killAll为false的时候才生效
      * @param reOn{boolean} 是否重新订阅
      */
 
   }, {
     key: 'kill',
-    value: function kill(key, killAll, actions) {
+    value: function kill(key, killAll, unSub) {
       var reOn = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : false;
 
       var updaters = this.updaters.get(key);
@@ -126,7 +126,13 @@ var Stream = function () {
         for (var _iterator = (0, _getIterator3.default)(updaters), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
           var updater = _step.value;
 
-          if (killAll || actions.indexOf(updater.action) !== -1) {
+          var sub = void 0;
+          if (updater.binder) {
+            sub = updater.binder;
+          } else {
+            sub = updater.action;
+          }
+          if (killAll || unSub.indexOf(sub) !== -1) {
             updater.subscription.unsubscribe();
             if (reOn) {
               this.on(updater, false);

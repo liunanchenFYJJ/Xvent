@@ -79,10 +79,13 @@ class XventCore {
     this.kill(keys, actions, true);
   }
 
-  unbind(keys, binders = []) {
+  unbind(keys, binders = [], reOn = false) {
     keys = toArray(keys);
     binders = toArray(binders);
-
+    let unbindAll = !binders.length;
+    for(let key of keys) {
+      this.getStreamCollector().kill(key, unbindAll, binders, reOn)
+    }
   }
 
   nameSpace(name) {

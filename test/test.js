@@ -2,7 +2,7 @@ import Xvent from '../src/xvent'
 import {Observable} from 'rxjs-es'
 let x = Xvent();
 let y = Xvent();
-console.log(x===y);
+// console.log(x === y);
 
 let store = x.getStore();
 
@@ -49,7 +49,7 @@ x.on('age', [log]);
 // x.on('loc', log, false);
 // x.bind(['age', 'name'], a);
 
-x.kill(['name', 'age'], log);
+// x.kill(['name', 'age'], log);
 // x.chew('name', log3);//如果原先不存在这个监听函数，那么什么都不会发生
 // store.name = 'luwenxu';
 
@@ -63,14 +63,19 @@ let p2 = ajax('suzhou', 2000);
 // store.loc = 'nanjing';
 
 //store.loc = Promise.all([p1, p2]);
-let b={};
+let b = {};
 
 let you = x.nameSpace('you');
-x.on('name',log);//没有反应
+x.on('name', log3);//没有反应
+
+x.customize('you:name', origin => {
+  return origin.map(v => v.value + ' >>> you')
+});
 x.on('you:name', log, false);
-x.bind('you:age',b);
+x.bind('you:age', b);
+x.unbind('you:age', b);
 you.name = 'lovely daidai';
-you.age=10;
+you.age = 10;
 console.log(b);
 
 window.store = store;

@@ -261,9 +261,35 @@ var XventCore = function () {
     key: 'unbind',
     value: function unbind(keys) {
       var binders = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : [];
+      var reOn = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : false;
 
       keys = (0, _tool.toArray)(keys);
       binders = (0, _tool.toArray)(binders);
+      var unbindAll = !binders.length;
+      var _iteratorNormalCompletion7 = true;
+      var _didIteratorError7 = false;
+      var _iteratorError7 = undefined;
+
+      try {
+        for (var _iterator7 = (0, _getIterator3.default)(keys), _step7; !(_iteratorNormalCompletion7 = (_step7 = _iterator7.next()).done); _iteratorNormalCompletion7 = true) {
+          var key = _step7.value;
+
+          this.getStreamCollector().kill(key, unbindAll, binders, reOn);
+        }
+      } catch (err) {
+        _didIteratorError7 = true;
+        _iteratorError7 = err;
+      } finally {
+        try {
+          if (!_iteratorNormalCompletion7 && _iterator7.return) {
+            _iterator7.return();
+          }
+        } finally {
+          if (_didIteratorError7) {
+            throw _iteratorError7;
+          }
+        }
+      }
     }
   }, {
     key: 'nameSpace',
