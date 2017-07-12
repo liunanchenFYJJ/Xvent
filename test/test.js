@@ -21,13 +21,14 @@ function ajax(result, delay) {
   })
 }
 
-x.customize('name', origin=>{
-  return origin.map(v=>{
-    return v.value+'...customized'
-  })
-})
+let a = {};
+// x.customize('name', origin=>{
+//   return origin
+//     .mergeAll()
+// });
 // x.on('age',[log,log2]);
-x.on('name', log3, false);
+x.on('name', log3);
+x.bind('name', a);
 
 store.name = 'first';
 // store.name = ajax('wenxu', 1000);
@@ -35,8 +36,9 @@ store.name = 'first';
 // store.name = Observable.of('she');
 // store.name = 'second';
 
-/*let y = x.nameSpace('y');
-x.on('y:name',log, false);
-y.name = 'test of namespace';*/
+let y = x.nameSpace('y');
+x.on('y:loc', log);
+x.bind('y:loc', a);
+y.loc = 'su zhou';
 
-window.store = store;
+window.a = a;

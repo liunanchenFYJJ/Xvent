@@ -9,40 +9,48 @@ export default class Group {
 
   sub(updater, needTrace) {
     needTrace && this.updaters.push(updater);
-    let {action, autoAnalyze} = updater;
+    let {action, binder} = updater;
     updater.subscription = this.origin.subscribe(next => {
-      let {value} = next;
-      let observable = null;
-      if (value instanceof Promise) {
-        observable = Observable.fromPromise(value)
-      } else if (value instanceof Observable) {
-        observable = value
+      if (this.customize) {
+        action.next(next)
       } else {
-        observable = Observable.of(value);
+        let {key, value} = next;
+        let observable = null;
+        if (value instanceof Promise) {
+          observable = Observable.fromPromise(value)
+        } else if (value instanceof Observable) {
+          observable = value
+        } else {
+          observable = Observable.of(value);
+        }
+        observable.subscribe({
+          next(value){
+            if (binder) {
+              action.next({key, value})
+            } else {
+              action.next(value)
+            }
+          },
+          error(){
+            action.error && action.error()
+          },
+          complete(){
+            action.complete && action.complete()
+          },
+        })
       }
-      observable.subscribe({
-        next(result){
-          if (autoAnalyze) {
-            action.next(result)
-          } else {
-            action.next(next)
-          }
-        },
-        error(){
-          action.error && action.error()
-        },
-        complete(){
-          action.complete && action.complete()
-        },
-      })
     });
   }
 
   pub(key, value) {
-    this.origin.next({
-      key,
-      value,
-    });
+    if (this.customize) {
+      this.origin.next(value)
+    } else {
+      this.origin.next({
+        key,
+        value,
+      });
+    }
   }
 
   doCustomize(func) {
