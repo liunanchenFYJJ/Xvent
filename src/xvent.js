@@ -89,7 +89,7 @@ class XventCore {
   }
 
   nameSpace(name) {
-    return this.getStore()[name] = new Store(this, name + ':')
+    return new Store(this, name + ':')
   }
 }
 

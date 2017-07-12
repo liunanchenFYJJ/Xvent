@@ -1,63 +1,25 @@
-import {Subject, Observable} from 'rxjs-es'
-import {store_nameSpace} from './store'
-import {nameSpaceRegex} from './regex'
+import Group from './group'
 export default class Stream {
   constructor() {
-    this.updaters = new Map()
   }
 
-  getOrigin(key) {
-    return this[key] || (this[key] = new Subject())
-  }
-
-  setOrigin(key, origin) {
-    return (this[key] = origin)
+  getGroup(name) {
+    return this[name] || (this[name] = new Group(name))
   }
 
   next(key, value, nameSpace) {
-    let origin = this.getOrigin(nameSpace + key);
-    if (value instanceof Promise) {
-      Observable.fromPromise(value).subscribe({
-        next(result){
-          origin.next({key, value: result})
-        },
-        error(){
-          origin.error()
-        },
-        complete(){
-          origin.complete()
-        },
-      });
-    } else {
-      origin.next({key, value})
-    }
-  }
-
-  setTraceOfUpdater(key, updater) {
-    let updaters = this.updaters.get(key);
-    if (!updaters) {
-      updaters = []
-    }
-    updaters = updaters.concat(updater);
-    this.updaters.set(key, updaters)
+    let group = this.getGroup(nameSpace + key);
+    group.pub(key, value, nameSpace);
   }
 
   customize(key, func) {
-    this.setOrigin(key, func(this.getOrigin(key)));
+    let group = this.getGroup(key);
+    group.doCustomize(func)
   }
 
   on(updater, needTrace = true) {
-    let {key, action, autoAnalyze} = updater;
-    needTrace && this.setTraceOfUpdater(key, updater);
-    let origin = this.getOrigin(key);
-    updater.subscription = this.getOrigin(key).subscribe(next => {
-      if (autoAnalyze) {
-        action(next.value)
-      } else {
-        action(next)
-      }
-    });
-    return origin
+    let group = this.getGroup(updater.key);
+    group.sub(updater, needTrace);
   }
 
   /**

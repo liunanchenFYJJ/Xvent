@@ -11,8 +11,14 @@ export default class Updater {
    * @param binder{object} 更新绑定对象
    */
   constructor(key, action, updaterType, autoAnalyze, binder = null) {
+    let subscriber = {};
+    if (typeof action === 'function') {
+      subscriber.next = action
+    } else {
+      subscriber = action
+    }
     this.key = key;
-    this.action = action;
+    this.action = subscriber;
     this.updaterType = updaterType;
     this.autoAnalyze = autoAnalyze;
     this.binder = binder;
