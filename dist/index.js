@@ -5139,7 +5139,7 @@ var Xvent = function () {
   _createClass(Xvent, [{
     key: 'pushIntoStream',
     value: function pushIntoStream(key, value) {
-      this.getStreamCollector().next(key, value);
+      this.getStream().next(key, value);
     }
   }, {
     key: 'getStore',
@@ -5147,7 +5147,7 @@ var Xvent = function () {
       return _privateMap2.default.get(this, 'store');
     }
   }, {
-    key: 'getStreamCollector',
+    key: 'getStream',
     value: function getStreamCollector() {
       return _privateMap2.default.get(this, 'streamCollector');
     }

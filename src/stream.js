@@ -7,8 +7,8 @@ export default class Stream {
     return this[name] || (this[name] = new Group(name))
   }
 
-  next(key, value, nameSpace) {
-    let group = this.getGroup(nameSpace + key);
+  next(key, value) {
+    let group = this.getGroup(key);
     group.pub(key, value);
   }
 
@@ -18,7 +18,7 @@ export default class Stream {
   }
 
   on(updater, needTrace = true) {
-    let group = this.getGroup(updater.key); // group已经区分了namespace
+    let group = this.getGroup(updater.key);
     group.sub(updater, needTrace);
   }
 

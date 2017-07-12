@@ -53,7 +53,7 @@ var XventCore = function () {
     value: function pushIntoStream(key, value) {
       var nameSpace = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : '';
 
-      this.getStreamCollector().next(key, value, nameSpace);
+      this.getStream().next(key, value, nameSpace);
     }
   }, {
     key: 'getStore',
@@ -61,7 +61,7 @@ var XventCore = function () {
       return _privateMap2.default.get(this, 'store');
     }
   }, {
-    key: 'getStreamCollector',
+    key: 'getStream',
     value: function getStreamCollector() {
       return _privateMap2.default.get(this, 'streamCollector');
     }
@@ -77,7 +77,7 @@ var XventCore = function () {
         for (var _iterator = (0, _getIterator3.default)(keys), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
           var key = _step.value;
 
-          this.getStreamCollector().customize(key, func);
+          this.getStream().customize(key, func);
         }
       } catch (err) {
         _didIteratorError = true;
@@ -209,7 +209,7 @@ var XventCore = function () {
   }, {
     key: 'dispatchToStream',
     value: function dispatchToStream(updater) {
-      this.getStreamCollector().on(updater);
+      this.getStream().on(updater);
     }
   }, {
     key: 'kill',
@@ -228,7 +228,7 @@ var XventCore = function () {
         for (var _iterator6 = (0, _getIterator3.default)(keys), _step6; !(_iteratorNormalCompletion6 = (_step6 = _iterator6.next()).done); _iteratorNormalCompletion6 = true) {
           var key = _step6.value;
 
-          this.getStreamCollector().kill(key, killAll, actions, reOn);
+          this.getStream().kill(key, killAll, actions, reOn);
         }
       } catch (err) {
         _didIteratorError6 = true;
@@ -274,7 +274,7 @@ var XventCore = function () {
         for (var _iterator7 = (0, _getIterator3.default)(keys), _step7; !(_iteratorNormalCompletion7 = (_step7 = _iterator7.next()).done); _iteratorNormalCompletion7 = true) {
           var key = _step7.value;
 
-          this.getStreamCollector().kill(key, unbindAll, binders, reOn);
+          this.getStream().kill(key, unbindAll, binders, reOn);
         }
       } catch (err) {
         _didIteratorError7 = true;

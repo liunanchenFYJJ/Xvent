@@ -1,15 +1,11 @@
-export let store_nameSpace = {};
 export default class Store {
-  constructor(xvent, nameSpace = '') {
-    if (nameSpace) {
-      store_nameSpace[nameSpace] = true
-    }
+  constructor(xvent) {
     return new Proxy({}, {
       get: (target, key, receiver) => {
         return Reflect.get(target, key, receiver)
       },
       set: (target, key, value, receiver) => {
-        xvent.pushIntoStream(key, value, nameSpace);
+        xvent.pushIntoStream(key, value);
         return Reflect.set(target, key, value, receiver)
       }
     })

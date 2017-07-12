@@ -1,6 +1,5 @@
 import Xvent from '../src/xvent'
-import {Observable} from 'rxjs-es'
-let x = Xvent();
+let x = new Xvent();
 
 let store = x.getStore();
 
@@ -35,10 +34,5 @@ store.name = 'first';
 // store.name = ajax('wenxu2', 2000);
 // store.name = Observable.of('she');
 // store.name = 'second';
-
-let y = x.nameSpace('y');
-x.on('y:loc', log);
-x.bind('y:loc', a);
-y.loc = 'su zhou';
 
 window.a = a;

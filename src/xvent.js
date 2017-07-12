@@ -6,30 +6,30 @@ import {toArray} from './tool'
 import {
   UPDATER_SETTER, UPDATER_USER_DEFINE
 } from './config'
-class XventCore {
+export default class Xvent{
   constructor() {
     privateMap.init(this, {
       store: new Store(this),
-      streamCollector: new Stream(),
+      stream: new Stream(),
     })
   }
 
-  pushIntoStream(key, value, nameSpace='') {
-    this.getStreamCollector().next(key, value, nameSpace)
+  pushIntoStream(key, value) {
+    this.getStream().next(key, value)
   }
 
   getStore() {
     return privateMap.get(this, 'store')
   }
 
-  getStreamCollector() {
-    return privateMap.get(this, 'streamCollector')
+  getStream() {
+    return privateMap.get(this, 'stream')
   }
 
   customize(keys, func) {
     keys = toArray(keys);
     for (let key of keys) {
-      this.getStreamCollector().customize(key, func)
+      this.getStream().customize(key, func)
     }
   }
 
@@ -48,7 +48,7 @@ class XventCore {
     binders = toArray(binders);
     for (let key of keys) {
       for (let binder of binders) {
-        this.dispatchToStream(XventCore.updater.setter(key, binder))
+        this.dispatchToStream(Xvent.updater.setter(key, binder))
       }
     }
   }
@@ -58,7 +58,7 @@ class XventCore {
    * @param updater{Updater}
    */
   dispatchToStream(updater) {
-    this.getStreamCollector().on(updater)
+    this.getStream().on(updater)
   }
 
   kill(keys, actions = [], reOn = false) {
@@ -66,7 +66,7 @@ class XventCore {
     actions = toArray(actions);
     let killAll = !actions.length;
     for (let key of keys) {
-      this.getStreamCollector().kill(key, killAll, actions, reOn)
+      this.getStream().kill(key, killAll, actions, reOn)
     }
   }
 
@@ -83,17 +83,13 @@ class XventCore {
     keys = toArray(keys);
     binders = toArray(binders);
     let unbindAll = !binders.length;
-    for(let key of keys) {
-      this.getStreamCollector().kill(key, unbindAll, binders, reOn)
+    for (let key of keys) {
+      this.getStream().kill(key, unbindAll, binders, reOn)
     }
-  }
-
-  nameSpace(name) {
-    return new Store(this, name + ':')
   }
 }
 
-XventCore.updater = {
+Xvent.updater = {
   /**
    * 生成订阅配置对象
    * @param key
@@ -111,14 +107,3 @@ XventCore.updater = {
     )
   }
 };
-
-function XFactory() {
-  let x;
-  return function () {
-    if (!x) {
-      x = new XventCore()
-    }
-    return x
-  }
-}
-export default XFactory()
