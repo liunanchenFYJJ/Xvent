@@ -1,44 +1,36 @@
-import Group from './group'
+import Source from './source'
+import {DEFAULT} from './config'
 export default class Stream {
   constructor() {
+    this[DEFAULT] = {}
   }
 
-  getGroup(name) {
-    return this[name] || (this[name] = new Group(name))
+  getNameSpace(name) {
+    if (name === null) {
+      return this[DEFAULT]
+    }
+    return this[name] || (this[name] = {})
   }
 
-  next(key, value) {
-    let group = this.getGroup(key);
-    group.pub(key, value);
+  getSource(nameSpace, key) {
+    let space = this.getNameSpace(nameSpace);
+    return space[key] || (space[key] = new Source(key))
   }
 
-  customize(key, func) {
-    let group = this.getGroup(key);
-    group.doCustomize(func)
+  next(key, value, nameSpace) {
+    this.getSource(nameSpace, key).pub(key, value);
+  }
+
+  customize(nameSpace, key, func) {
+    this.getSource(nameSpace, key).doCustomize(func)
   }
 
   on(updater, needTrace = true) {
-    let group = this.getGroup(updater.key);
-    group.sub(updater, needTrace);
+    this.getSource(updater.nameSpace, updater.key).sub(updater, needTrace);
   }
 
   kill(key, killAll, unSub, reOn = false) {
-    let group = this.getGroup(key);
-    group.kill(key, killAll, unSub, reOn);
-    // let updaters = this.updaters.get(key);
-    // for (let updater of updaters) {
-    //   let sub;
-    //   if (updater.binder) {
-    //     sub = updater.binder
-    //   } else {
-    //     sub = updater.action
-    //   }
-    //   if (killAll || unSub.indexOf(sub) !== -1) {
-    //     updater.subscription.unsubscribe();
-    //     if (reOn) {
-    //       this.on(updater, false)
-    //     }
-    //   }
-    // }
+    let source = this.getSource(key);
+    source.kill(key, killAll, unSub, reOn);
   }
 }

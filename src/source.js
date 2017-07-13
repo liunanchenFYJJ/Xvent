@@ -1,5 +1,5 @@
 import {Observable, Subject} from 'rxjs-es'
-export default class Group {
+export default class Source {
   constructor(name) {
     this.name = name;
     this.origin = new Subject();
@@ -14,7 +14,7 @@ export default class Group {
       if (this.customize) {
         action.next(next)
       } else {
-        let {key, value} = next;
+        let {value} = next;
         let observable = null;
         if (value instanceof Promise) {
           observable = Observable.fromPromise(value)
@@ -25,11 +25,7 @@ export default class Group {
         }
         observable.subscribe({
           next(value){
-            if (binder) {
-              action.next({key, value})
-            } else {
-              action.next(value)
-            }
+            action.next(value)
           },
           error(){
             action.error && action.error()

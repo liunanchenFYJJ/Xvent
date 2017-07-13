@@ -6,7 +6,7 @@ import {toArray} from './tool'
 import {
   UPDATER_SETTER, UPDATER_USER_DEFINE
 } from './config'
-export default class Xvent{
+export default class Xvent {
   constructor() {
     privateMap.init(this, {
       store: new Store(this),
@@ -14,8 +14,8 @@ export default class Xvent{
     })
   }
 
-  pushIntoStream(key, value) {
-    this.getStream().next(key, value)
+  pushIntoStream(key, value, nameSpace) {
+    this.getStream().next(key, value, nameSpace)
   }
 
   getStore() {
@@ -26,29 +26,53 @@ export default class Xvent{
     return privateMap.get(this, 'stream')
   }
 
-  customize(keys, func) {
+  customize(nameSpace, keys, func) {
+    if (typeof func === 'undefined') {
+      func = keys;
+      keys = nameSpace;
+      nameSpace = null;
+    }
     keys = toArray(keys);
     for (let key of keys) {
-      this.getStream().customize(key, func)
+      this.getStream().customize(nameSpace, key, func)
     }
   }
 
-  on(keys, actions, autoAnalyze = true) {
+  on(nameSpace, keys, actions) {
+    if (typeof actions === 'undefined') {
+      actions = keys;
+      keys = nameSpace;
+      nameSpace = null;
+    }
     keys = toArray(keys);
     actions = toArray(actions);
     for (let key of keys) {
       for (let action of actions) {
-        this.dispatchToStream(new Updater(key, action, UPDATER_USER_DEFINE, autoAnalyze))
+        this.dispatchToStream(new Updater(nameSpace, key, action, UPDATER_USER_DEFINE))
       }
     }
   }
 
-  bind(keys, binders) {
+  bind(nameSpace, keys, binders) {
+    if (typeof binders === 'undefined') {
+      binders = keys;
+      keys = nameSpace;
+      nameSpace = null;
+    }
     keys = toArray(keys);
     binders = toArray(binders);
     for (let key of keys) {
       for (let binder of binders) {
-        this.dispatchToStream(Xvent.updater.setter(key, binder))
+        this.dispatchToStream(
+          new Updater(
+            nameSpace,
+            key,
+            next => {
+              binder[key] = next
+            },
+            UPDATER_SETTER,
+            binder
+          ))
       }
     }
   }
@@ -87,23 +111,8 @@ export default class Xvent{
       this.getStream().kill(key, unbindAll, binders, reOn)
     }
   }
-}
 
-Xvent.updater = {
-  /**
-   * 生成订阅配置对象
-   * @param key
-   * @param binder
-   */
-  setter(key, binder){
-    return new Updater(
-      key,
-      next => {
-        binder[next.key] = next.value
-      },
-      UPDATER_SETTER,
-      false,
-      binder
-    )
+  nameSpace(spaceName) {
+    return new Store(this, spaceName)
   }
-};
+}
