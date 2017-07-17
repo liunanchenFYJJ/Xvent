@@ -25,7 +25,7 @@ export default class Stream {
     this.getSource(nameSpace, key).doCustomize(func)
   }
 
-  on(updater, needTrace = true) {
+  link(updater, needTrace = true) {
     this.getSource(updater.nameSpace, updater.key).sub(updater, needTrace);
   }
 

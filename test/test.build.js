@@ -20913,7 +20913,7 @@ function toSubscriber(nextOrObserver, error, complete) {
       for (var i = 0; i < args.length; i++) {
           args[i] = arguments[i + 1];
       }
-      // Store and register the task
+      // Dispatcher and register the task
       var task = { callback: callback, args: args };
       tasksByHandle[nextHandle] = task;
       registerImmediate(nextHandle);

@@ -1,4 +1,4 @@
-export default class Store {
+export default class Dispatcher {
   constructor(xvent, nameSpace = null) {
     return new Proxy({}, {
       get: (target, key, receiver) => {
