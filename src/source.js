@@ -49,7 +49,7 @@ export default class Source {
     }
   }
 
-  doCustomize(func) {
+  replace(func) {
     this.customize = true;
     this.origin = func(this.origin)
   }

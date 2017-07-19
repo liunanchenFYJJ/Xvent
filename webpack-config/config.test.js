@@ -3,13 +3,19 @@ let webpack = require('webpack');
 module.exports = function (env) {
 	return {
 		entry: {
-			test: './test/test.js'
+			index: './test/test.js',
+			vendor: ['rxjs-es'],
 		},
+		devtool: 'inline-source-map',
 		output: {
 			path: path.join(__dirname, '../test'),
-			filename: '[name].build.js',
+			filename: '[name].js',
 		},
-		plugins: [],
+		plugins: [
+			new webpack.optimize.CommonsChunkPlugin({
+				name: ['vendor', 'manifest']
+			})
+		],
 		module: {
 			rules: [
 				{
