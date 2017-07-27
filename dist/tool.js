@@ -5,6 +5,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.toArray = toArray;
 exports.reviseArgumentsOfNamespace = reviseArgumentsOfNamespace;
+exports.generateSubscriber = generateSubscriber;
 function toArray(val) {
 	return [].concat(val);
 }
@@ -12,15 +13,25 @@ function toArray(val) {
 function reviseArgumentsOfNamespace(namespace, keys, other) {
 	if (typeof other === 'undefined') {
 		return {
-			sourceSpace: null,
+			namespace: null,
 			keys: namespace,
 			other: keys
 		};
 	} else {
 		return {
-			sourceSpace: namespace,
+			namespace: namespace,
 			keys: keys,
 			other: other
 		};
 	}
+}
+
+function generateSubscriber(action) {
+	var subscriber = {};
+	if (typeof action === 'function') {
+		subscriber.next = action;
+	} else {
+		subscriber = action;
+	}
+	return subscriber;
 }

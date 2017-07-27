@@ -1,1 +1,1 @@
-export {x} from './dist/xvent'
+module.exports = require('/dist/xvent')

@@ -16,10 +16,12 @@ import {
 class Xvent {
   constructor() {
     this.namespace = namespace;
+    this.lazySubController = {};
   }
 
   pushIntoStream(key, value, dispatcher) {
-    this.getSource(dispatcher.name, key).pub(key, value, this.getSource(dispatcher.name, '*'))
+    this.lazySub(dispatcher.name, key);
+    this.getSource(dispatcher.name, key).pub(key, value)
   }
 
   customize(...arg) {
@@ -37,15 +39,10 @@ class Xvent {
         let source = this.getSource(namespace, key);
         let subscriber = generateSubscriber(action);
         if (key === '*') {
-          source.lazySubController.push({
-            subInfo: (key) => {
-              return [
-                new Updater(key, subscriber, UPDATER_USER_DEFINE),
-                true,
-              ]
-            },
-            keys: {},
-          })
+          this.resolveAsterisk(
+            namespace,
+            key => new Updater(key, subscriber, UPDATER_USER_DEFINE)
+          )
         } else {
           source
             .sub(
@@ -67,15 +64,12 @@ class Xvent {
           binder[key] = next
         });
         if (key === '*') {
-          source.lazySubController.push({
-            subInfo: (key) => {
-              return [
-                new Updater(key, subscriber, UPDATER_SETTER, binder),
-                true
-              ]
-            },
-            keys: {},
-          })
+          this.resolveAsterisk(
+            namespace,
+            key => new Updater(key, generateSubscriber(next => {
+              binder[key] = next
+            }), UPDATER_SETTER, binder)
+          )
         } else {
           source
             .sub(
@@ -86,6 +80,15 @@ class Xvent {
       }
     }
     return this
+  }
+
+  lazySub(namespace, key) {
+    for (let lazy of this.lazySubController[namespace]) {
+      if (!lazy.keys[key]) {
+        lazy.keys[key] = true;
+        this.getSource(namespace, key).sub(lazy.getUpdater(key), true)
+      }
+    }
   }
 
   createDispatcher(name) {
@@ -104,6 +107,18 @@ class Xvent {
 
   alias(namespace) {
     return new Alias(this, namespace)
+  }
+
+  resolveAsterisk(namespace, updaterFactory) {
+    if (!this.lazySubController[namespace]) {
+      this.lazySubController[namespace] = []
+    }
+    this.lazySubController[namespace].push({
+      getUpdater: (key) => {
+        return updaterFactory(key)
+      },
+      keys: {},
+    })
   }
 }
 

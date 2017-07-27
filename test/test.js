@@ -52,11 +52,13 @@ x
 // you.name = ajax('daidai', 1000)
 
 let a = {};
-let b = {};
+let b = {
+  t:'b'
+};
 x
   .alias('me')
   .customize('name', origin => {
-    return origin.map(name => 'shuai' + name)
+    return origin.map(name => 'shuai~' + name)
   })
   .on('*', log3)
   .bind('*', b)

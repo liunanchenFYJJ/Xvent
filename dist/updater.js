@@ -1,22 +1,19 @@
-'use strict';
+"use strict";
 
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
-var _classCallCheck2 = require('babel-runtime/helpers/classCallCheck');
+var _classCallCheck2 = require("babel-runtime/helpers/classCallCheck");
 
 var _classCallCheck3 = _interopRequireDefault(_classCallCheck2);
 
-var _createClass2 = require('babel-runtime/helpers/createClass');
+var _createClass2 = require("babel-runtime/helpers/createClass");
 
 var _createClass3 = _interopRequireDefault(_createClass2);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-/**
- * Created by luwenxu on 2017/6/17.
- */
 var Updater = function () {
   /**
    * 构造函数。
@@ -26,25 +23,18 @@ var Updater = function () {
    * @param updaterType{string} 订阅类型
    * @param binder{object} 更新绑定对象
    */
-  function Updater(nameSpace, key, action, updaterType) {
-    var binder = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : null;
+  function Updater(key, action, updaterType) {
+    var binder = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : null;
     (0, _classCallCheck3.default)(this, Updater);
 
-    var subscriber = {};
-    if (typeof action === 'function') {
-      subscriber.next = action;
-    } else {
-      subscriber = action;
-    }
-    this.nameSpace = nameSpace;
     this.key = key;
-    this.action = subscriber;
+    this.action = action;
     this.updaterType = updaterType;
     this.binder = binder;
   }
 
   (0, _createClass3.default)(Updater, null, [{
-    key: 'create',
+    key: "create",
     value: function create(key) {
       for (var _len = arguments.length, args = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
         args[_key - 1] = arguments[_key];

@@ -36,8 +36,7 @@ var Source = function () {
       var _this = this;
 
       needTrace && this.updaters.push(updater);
-      var action = updater.action,
-          binder = updater.binder;
+      var action = updater.action;
 
       updater.subscription = this.origin.subscribe(function (next) {
         if (_this.customize) {

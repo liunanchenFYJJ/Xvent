@@ -1,12 +1,10 @@
 import {Observable, Subject} from 'rxjs-es'
-import {Updater} from './updater'
 export default class Source {
   constructor(name) {
     this.name = name;
     this.origin = new Subject();
     this.updaters = [];
     this.customize = false;
-    this.lazySubController = [];
   }
 
   sub(updater, needTrace) {
@@ -40,8 +38,7 @@ export default class Source {
     });
   }
 
-  pub(key, value, lazySource) {
-    lazySource.lazySub(key, this);
+  pub(key, value) {
     if (this.customize) {
       this.origin.next(value);
     } else {
@@ -55,16 +52,5 @@ export default class Source {
   replace(func) {
     this.customize = true;
     this.origin = func(this.origin)
-  }
-
-  lazySub(key, source) {
-    for (let lazy of this.lazySubController) {
-      if (!lazy.keys[key]) {
-        lazy.keys[key] = true;
-        source.sub(
-          ...lazy.subInfo(key)
-        )
-      }
-    }
   }
 }
