@@ -43,7 +43,7 @@ var Xvent = function () {
 	function Xvent() {
 		(0, _classCallCheck3.default)(this, Xvent);
 
-		this.namespace = _namespace2.default;
+		this.sourceSpace = _namespace2.default;
 	}
 
 	(0, _createClass3.default)(Xvent, [{
@@ -55,7 +55,7 @@ var Xvent = function () {
 		key: 'customize',
 		value: function customize() {
 			var _reviseArgumentsOfNam = _tool.reviseArgumentsOfNamespace.apply(undefined, arguments),
-			    namespace = _reviseArgumentsOfNam.namespace,
+			    namespace = _reviseArgumentsOfNam.sourceSpace,
 			    keys = _reviseArgumentsOfNam.keys,
 			    func = _reviseArgumentsOfNam.other;
 
@@ -90,7 +90,7 @@ var Xvent = function () {
 		key: 'on',
 		value: function on() {
 			var _reviseArgumentsOfNam2 = _tool.reviseArgumentsOfNamespace.apply(undefined, arguments),
-			    namespace = _reviseArgumentsOfNam2.namespace,
+			    namespace = _reviseArgumentsOfNam2.sourceSpace,
 			    keys = _reviseArgumentsOfNam2.keys,
 			    actions = _reviseArgumentsOfNam2.other;
 
@@ -149,13 +149,13 @@ var Xvent = function () {
 			var _this = this;
 
 			var _reviseArgumentsOfNam3 = _tool.reviseArgumentsOfNamespace.apply(undefined, arguments),
-			    namespace = _reviseArgumentsOfNam3.namespace,
+			    namespace = _reviseArgumentsOfNam3.sourceSpace,
 			    keys = _reviseArgumentsOfNam3.keys,
 			    binders = _reviseArgumentsOfNam3.other;
 
 			var _loop = function _loop(key) {
 				var _loop2 = function _loop2(binder) {
-					_this.namespace.getSource(namespace, key).sub(new _updater2.default(namespace, key, function (next) {
+					_this.sourceSpace.getSource(namespace, key).sub(new _updater2.default(namespace, key, function (next) {
 						binder[key] = next;
 					}, _config.UPDATER_SETTER, binder), true);
 				};
@@ -223,9 +223,9 @@ var Xvent = function () {
 		value: function getSource(name, key) {
 			var space = void 0;
 			if (name === null) {
-				space = this.namespace[_config.DEFAULT];
+				space = this.sourceSpace[_config.DEFAULT];
 			} else {
-				space = this.namespace[name] || (this.namespace[name] = {});
+				space = this.sourceSpace[name] || (this.sourceSpace[name] = {});
 			}
 			return space[key] || (space[key] = new _source2.default(key));
 		}

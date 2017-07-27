@@ -12,13 +12,13 @@ function toArray(val) {
 function reviseArgumentsOfNamespace(namespace, keys, other) {
 	if (typeof other === 'undefined') {
 		return {
-			namespace: null,
+			sourceSpace: null,
 			keys: namespace,
 			other: keys
 		};
 	} else {
 		return {
-			namespace: namespace,
+			sourceSpace: namespace,
 			keys: keys,
 			other: other
 		};

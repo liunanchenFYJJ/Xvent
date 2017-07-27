@@ -2,6 +2,7 @@ import Dispatcher from './dispather'
 import Updater from './updater'
 import namespace from './namespace'
 import Source from './source'
+import Alias from './alias'
 import {DEFAULT} from './config'
 import {
 	toArray,
@@ -47,7 +48,7 @@ class Xvent {
 		let {namespace, keys, other: binders} = reviseArgumentsOfNamespace(...arg);
 		for (let key of toArray(keys)) {
 			for (let binder of toArray(binders)) {
-				this.namespace
+				this
 					.getSource(namespace, key)
 					.sub(
 						new Updater(
@@ -79,6 +80,10 @@ class Xvent {
 		}
 		return space[key] || (space[key] = new Source(key))
 	}
+
+	alias(namespace) {
+	  return new Alias(this, namespace)
+  }
 }
 
 export let x = new Xvent();

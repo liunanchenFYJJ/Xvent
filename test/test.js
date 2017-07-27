@@ -3,6 +3,7 @@ import {Observable} from 'rxjs-es'
 
 let dispatcher = x.createDispatcher();
 let you = x.createDispatcher('you');
+let me = x.createDispatcher('me');
 
 function log(v) {
 	console.log('log: ', v)
@@ -27,25 +28,37 @@ x
 			return age + 10
 		})
 	})
-	.on('age', log2);
+	.on('age', log2)
+  .on('name', log);
 
 x
-	.customize('you', 'name', origin => {
+  .alias('you')
+	.customize('name', origin => {
 		return origin
 			.mergeAll()
-			.map(name => 'lovely ' + name)
+			.map(name => {
+			  return 'lovely ' + name
+      })
 	})
-	.on('you', 'name', log3);
+	.on('name', log3);
 
 dispatcher.name = 'wenxu';
 dispatcher.age = 12;
 
-// you.name = Observable.zip(
-// 	Observable.fromPromise(ajax('daidai', 1000)),
-// 	Observable.fromPromise(ajax('wenxu', 2000)),
-// );
-you.name = ajax('daidai', 1000)
-let a = {};
+you.name = Observable.zip(
+	Observable.fromPromise(ajax('daidai', 1000)),
+	Observable.fromPromise(ajax('wenxu', 2000)),
+);
+// you.name = ajax('daidai', 1000)
 
+let a = {};
+x
+  .alias('me')
+  .customize('name',origin => {
+    return origin.map(name => 'shuai' + name)
+  })
+  .bind('name',a)
+
+me.name = 'wenxu'
 window.x = x;
 window.a = a;
