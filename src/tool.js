@@ -17,3 +17,13 @@ export function reviseArgumentsOfNamespace(namespace, keys, other) {
 		}
 	}
 }
+
+export function generateSubscriber(action) {
+	let subscriber = {};
+  if (typeof action === 'function') {
+    subscriber.next = action
+  } else {
+    subscriber = action
+  }
+  return subscriber
+}

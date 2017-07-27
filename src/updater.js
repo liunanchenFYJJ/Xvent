@@ -1,6 +1,3 @@
-/**
- * Created by luwenxu on 2017/6/17.
- */
 export default class Updater {
   /**
    * 构造函数。
@@ -10,16 +7,9 @@ export default class Updater {
    * @param updaterType{string} 订阅类型
    * @param binder{object} 更新绑定对象
    */
-  constructor(nameSpace, key, action, updaterType, binder = null) {
-    let subscriber = {};
-    if (typeof action === 'function') {
-      subscriber.next = action
-    } else {
-      subscriber = action
-    }
-    this.nameSpace = nameSpace;
+  constructor(key, action, updaterType, binder = null) {
     this.key = key;
-    this.action = subscriber;
+    this.action = action;
     this.updaterType = updaterType;
     this.binder = binder;
   }
