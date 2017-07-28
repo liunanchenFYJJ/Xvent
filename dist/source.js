@@ -42,7 +42,8 @@ var Source = function () {
         if (_this.customize) {
           action.next(next);
         } else {
-          var value = next.value;
+          var value = next.value,
+              key = next.key;
 
           var observable = null;
           if (value instanceof _promise2.default) {
@@ -54,7 +55,7 @@ var Source = function () {
           }
           observable.subscribe({
             next: function next(value) {
-              action.next(value);
+              action.next(value, key);
             },
             error: function error() {
               action.error && action.error();
@@ -69,14 +70,10 @@ var Source = function () {
   }, {
     key: 'pub',
     value: function pub(key, value) {
-      if (this.customize) {
-        this.origin.next(value);
-      } else {
-        this.origin.next({
-          key: key,
-          value: value
-        });
-      }
+      this.origin.next({
+        key: key,
+        value: value
+      });
     }
   }, {
     key: 'replace',

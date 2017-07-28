@@ -14,7 +14,7 @@ export default class Source {
       if (this.customize) {
         action.next(next)
       } else {
-        let {value} = next;
+        let {value, key} = next;
         let observable = null;
         if (value instanceof Promise) {
           observable = Observable.fromPromise(value)
@@ -25,7 +25,7 @@ export default class Source {
         }
         observable.subscribe({
           next(value){
-            action.next(value)
+            action.next(value, key)
           },
           error(){
             action.error && action.error()
@@ -39,14 +39,10 @@ export default class Source {
   }
 
   pub(key, value) {
-    if (this.customize) {
-      this.origin.next(value);
-    } else {
-      this.origin.next({
-        key,
-        value,
-      });
-    }
+    this.origin.next({
+      key,
+      value,
+    });
   }
 
   replace(func) {
