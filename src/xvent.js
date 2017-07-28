@@ -83,10 +83,12 @@ class Xvent {
   }
 
   lazySub(namespace, key) {
-    for (let lazy of this.lazySubController[namespace]) {
-      if (!lazy.keys[key]) {
-        lazy.keys[key] = true;
-        this.getSource(namespace, key).sub(lazy.getUpdater(key), true)
+    if (this.lazySubController[namespace]) {
+      for (let lazy of this.lazySubController[namespace]) {
+        if (!lazy.keys[key]) {
+          lazy.keys[key] = true;
+          this.getSource(namespace, key).sub(lazy.getUpdater(key), true)
+        }
       }
     }
   }

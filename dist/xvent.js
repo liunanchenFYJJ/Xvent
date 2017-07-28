@@ -247,30 +247,32 @@ var Xvent = function () {
   }, {
     key: 'lazySub',
     value: function lazySub(namespace, key) {
-      var _iteratorNormalCompletion6 = true;
-      var _didIteratorError6 = false;
-      var _iteratorError6 = undefined;
+      if (this.lazySubController[namespace]) {
+        var _iteratorNormalCompletion6 = true;
+        var _didIteratorError6 = false;
+        var _iteratorError6 = undefined;
 
-      try {
-        for (var _iterator6 = (0, _getIterator3.default)(this.lazySubController[namespace]), _step6; !(_iteratorNormalCompletion6 = (_step6 = _iterator6.next()).done); _iteratorNormalCompletion6 = true) {
-          var lazy = _step6.value;
-
-          if (!lazy.keys[key]) {
-            lazy.keys[key] = true;
-            this.getSource(namespace, key).sub(lazy.getUpdater(key), true);
-          }
-        }
-      } catch (err) {
-        _didIteratorError6 = true;
-        _iteratorError6 = err;
-      } finally {
         try {
-          if (!_iteratorNormalCompletion6 && _iterator6.return) {
-            _iterator6.return();
+          for (var _iterator6 = (0, _getIterator3.default)(this.lazySubController[namespace]), _step6; !(_iteratorNormalCompletion6 = (_step6 = _iterator6.next()).done); _iteratorNormalCompletion6 = true) {
+            var lazy = _step6.value;
+
+            if (!lazy.keys[key]) {
+              lazy.keys[key] = true;
+              this.getSource(namespace, key).sub(lazy.getUpdater(key), true);
+            }
           }
+        } catch (err) {
+          _didIteratorError6 = true;
+          _iteratorError6 = err;
         } finally {
-          if (_didIteratorError6) {
-            throw _iteratorError6;
+          try {
+            if (!_iteratorNormalCompletion6 && _iterator6.return) {
+              _iterator6.return();
+            }
+          } finally {
+            if (_didIteratorError6) {
+              throw _iteratorError6;
+            }
           }
         }
       }
