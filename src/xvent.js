@@ -3,35 +3,48 @@ import Alias from './alias'
 import {
   toArray,
   generateSubscriber,
+  pub,
+  sub,
 } from './tool'
-import {
-  UPDATER_SETTER,
-  UPDATER_USER_DEFINE
-} from './config'
+
 class Xvent {
   constructor() {
     this.$controllers = {}
-    this.lazySubController = {};
+    this.$lazySubs = {}
   }
 
   dispatch(controllerName, flow, value) {
     // this.lazySub(controller.name, key);
-    this.$controllers[controllerName].pub(flow, value)
+    pub(this.$controllers[controllerName], flow, value)
   }
 
 
   on(controllerName, flows, actions) {
     for (let flow of toArray(flows)) {
       for (let action of toArray(actions)) {
-        let controller = this.$controllers[controllerName];
-        let observer = generateSubscriber(action);
+        let controller = this.$controllers[controllerName]
+        let observer = generateSubscriber(action)
         if (flow === '*') {
-          this.resolveAsterisk(
-            controllerName,
-            key => new Updater(key, observer, UPDATER_USER_DEFINE)
-          )
+          this.resolveAsterisk(controllerName, observer)
+        } else {
+          sub(controller, flow, observer)
         }
-        controller.sub(flow, observer)
+      }
+    }
+    return this
+  }
+
+  bind(controllerName, flows, binders) {
+    for (let flow of toArray(flows)) {
+      for (let binder of toArray(binders)) {
+        let controller = this.$controllers[controllerName]
+        // let observer = generateSubscriber(action);
+        if (flow === '*') {
+          this.resolveAsterisk()
+        }
+        sub(controller, flow, value => {
+          binder[flow] = value
+        })
       }
     }
     return this
@@ -39,8 +52,8 @@ class Xvent {
 
 
   lazySub(namespace, key) {
-    if (this.lazySubController[namespace]) {
-      for (let lazy of this.lazySubController[namespace]) {
+    if (this.$lazySubs[namespace]) {
+      for (let lazy of this.$lazySubs[namespace]) {
         if (!lazy.keys[key]) {
           lazy.keys[key] = true;
           this.getSource(namespace, key).sub(lazy.getUpdater(key), true)
@@ -50,18 +63,18 @@ class Xvent {
   }
 
   controller(name) {
-    return this.$controllers[name] = new Controller(this, name);
+    return this.$controllers[name] = new Controller(this, name)
   }
 
   controllerAs(controller) {
     return new Alias(this, controller)
   }
 
-  resolveAsterisk(namespace, updaterFactory) {
-    if (!this.lazySubController[namespace]) {
-      this.lazySubController[namespace] = []
+  resolveAsterisk(controller, flow, observer) {
+    if (!this.$lazySubs[controller]) {
+      this.$lazySubs[controller] = []
     }
-    this.lazySubController[namespace].push({
+    this.$lazySubs[namespace].push({
       getUpdater: (key) => {
         return updaterFactory(key)
       },

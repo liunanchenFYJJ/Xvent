@@ -1,37 +1,31 @@
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
-	value: true
+  value: true
 });
 exports.toArray = toArray;
-exports.reviseArgumentsOfNamespace = reviseArgumentsOfNamespace;
 exports.generateSubscriber = generateSubscriber;
+exports.pub = pub;
+exports.sub = sub;
 function toArray(val) {
-	return [].concat(val);
-}
-
-function reviseArgumentsOfNamespace(namespace, keys, other) {
-	if (typeof other === 'undefined') {
-		return {
-			$controller: null,
-			keys: namespace,
-			other: keys
-		};
-	} else {
-		return {
-			$controller: namespace,
-			keys: keys,
-			other: other
-		};
-	}
+  return [].concat(val);
 }
 
 function generateSubscriber(action) {
-	var subscriber = {};
-	if (typeof action === 'function') {
-		subscriber.next = action;
-	} else {
-		subscriber = action;
-	}
-	return subscriber;
+  var observer = {};
+  if (typeof action === 'function') {
+    observer.next = action;
+  } else {
+    observer = action;
+  }
+  return observer;
+}
+
+function pub(controller, flow, value) {
+  controller.$flows.raw[flow].next(value);
+}
+
+function sub(controller, flow, observer) {
+  controller.$flows.processed[flow].subscribe(observer);
+  controller.$listeners[flow].push(observer);
 }

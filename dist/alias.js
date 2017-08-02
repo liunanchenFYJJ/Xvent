@@ -15,11 +15,11 @@ var _createClass3 = _interopRequireDefault(_createClass2);
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 var Alias = function () {
-  function Alias(xvent, namespace) {
+  function Alias(xvent, controller) {
     (0, _classCallCheck3.default)(this, Alias);
 
     this.xvent = xvent;
-    this.$controller = namespace;
+    this.$controller = controller;
   }
 
   (0, _createClass3.default)(Alias, [{
@@ -47,15 +47,15 @@ var Alias = function () {
       return this;
     }
   }, {
-    key: "customize",
-    value: function customize() {
+    key: "dispatch",
+    value: function dispatch() {
       var _xvent3;
 
       for (var _len3 = arguments.length, arg = Array(_len3), _key3 = 0; _key3 < _len3; _key3++) {
         arg[_key3] = arguments[_key3];
       }
 
-      (_xvent3 = this.xvent).customize.apply(_xvent3, [this.$controller].concat(arg));
+      (_xvent3 = this.xvent).dispatch.apply(_xvent3, [this.$controller].concat(arg));
       return this;
     }
   }]);

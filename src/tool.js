@@ -1,29 +1,22 @@
 export function toArray(val) {
-	return [].concat(val)
-}
-
-export function reviseArgumentsOfNamespace(namespace, keys, other) {
-	if (typeof other === 'undefined') {
-		return {
-			$controller: null,
-			keys: namespace,
-			other: keys,
-		}
-	} else {
-		return {
-			$controller,
-			keys,
-			other,
-		}
-	}
+  return [].concat(val)
 }
 
 export function generateSubscriber(action) {
-	let subscriber = {};
+  let observer = {}
   if (typeof action === 'function') {
-    subscriber.next = action
+    observer.next = action
   } else {
-    subscriber = action
+    observer = action
   }
-  return subscriber
+  return observer
+}
+
+export function pub(controller, flow, value) {
+  controller.$flows.raw[flow].next(value)
+}
+
+export function sub(controller, flow, observer) {
+  controller.$flows.processed[flow].subscribe(observer)
+  controller.$listeners[flow].push(observer)
 }
