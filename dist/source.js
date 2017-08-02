@@ -25,7 +25,7 @@ var Source = function () {
     (0, _classCallCheck3.default)(this, Source);
 
     this.name = name;
-    this.origin = new _rxjsEs.Subject();
+    this.flow = new _rxjsEs.Subject();
     this.updaters = [];
     this.customize = false;
   }
@@ -38,7 +38,7 @@ var Source = function () {
       needTrace && this.updaters.push(updater);
       var action = updater.action;
 
-      updater.subscription = this.origin.subscribe(function (next) {
+      updater.subscription = this.flow.subscribe(function (next) {
         if (_this.customize) {
           action.next(next);
         } else {
@@ -70,7 +70,7 @@ var Source = function () {
   }, {
     key: 'pub',
     value: function pub(key, value) {
-      this.origin.next({
+      this.flow.next({
         key: key,
         value: value
       });
@@ -79,7 +79,7 @@ var Source = function () {
     key: 'replace',
     value: function replace(func) {
       this.customize = true;
-      this.origin = func(this.origin);
+      this.flow = func(this.flow);
     }
   }]);
   return Source;

@@ -5,13 +5,13 @@ export function toArray(val) {
 export function reviseArgumentsOfNamespace(namespace, keys, other) {
 	if (typeof other === 'undefined') {
 		return {
-			namespace: null,
+			$controller: null,
 			keys: namespace,
 			other: keys,
 		}
 	} else {
 		return {
-			namespace,
+			$controller,
 			keys,
 			other,
 		}

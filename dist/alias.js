@@ -19,7 +19,7 @@ var Alias = function () {
     (0, _classCallCheck3.default)(this, Alias);
 
     this.xvent = xvent;
-    this.namespace = namespace;
+    this.$controller = namespace;
   }
 
   (0, _createClass3.default)(Alias, [{
@@ -31,7 +31,7 @@ var Alias = function () {
         arg[_key] = arguments[_key];
       }
 
-      (_xvent = this.xvent).bind.apply(_xvent, [this.namespace].concat(arg));
+      (_xvent = this.xvent).bind.apply(_xvent, [this.$controller].concat(arg));
       return this;
     }
   }, {
@@ -43,7 +43,7 @@ var Alias = function () {
         arg[_key2] = arguments[_key2];
       }
 
-      (_xvent2 = this.xvent).on.apply(_xvent2, [this.namespace].concat(arg));
+      (_xvent2 = this.xvent).on.apply(_xvent2, [this.$controller].concat(arg));
       return this;
     }
   }, {
@@ -55,7 +55,7 @@ var Alias = function () {
         arg[_key3] = arguments[_key3];
       }
 
-      (_xvent3 = this.xvent).customize.apply(_xvent3, [this.namespace].concat(arg));
+      (_xvent3 = this.xvent).customize.apply(_xvent3, [this.$controller].concat(arg));
       return this;
     }
   }]);

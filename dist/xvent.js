@@ -47,7 +47,7 @@ var Xvent = function () {
   function Xvent() {
     (0, _classCallCheck3.default)(this, Xvent);
 
-    this.namespace = _namespace2.default;
+    this.$controller = _namespace2.default;
     this.lazySubController = {};
   }
 
@@ -61,7 +61,7 @@ var Xvent = function () {
     key: 'customize',
     value: function customize() {
       var _reviseArgumentsOfNam = _tool.reviseArgumentsOfNamespace.apply(undefined, arguments),
-          namespace = _reviseArgumentsOfNam.namespace,
+          namespace = _reviseArgumentsOfNam.$controller,
           keys = _reviseArgumentsOfNam.keys,
           func = _reviseArgumentsOfNam.other;
 
@@ -98,7 +98,7 @@ var Xvent = function () {
       var _this = this;
 
       var _reviseArgumentsOfNam2 = _tool.reviseArgumentsOfNamespace.apply(undefined, arguments),
-          namespace = _reviseArgumentsOfNam2.namespace,
+          namespace = _reviseArgumentsOfNam2.$controller,
           keys = _reviseArgumentsOfNam2.keys,
           actions = _reviseArgumentsOfNam2.other;
 
@@ -170,7 +170,7 @@ var Xvent = function () {
       var _this2 = this;
 
       var _reviseArgumentsOfNam3 = _tool.reviseArgumentsOfNamespace.apply(undefined, arguments),
-          namespace = _reviseArgumentsOfNam3.namespace,
+          namespace = _reviseArgumentsOfNam3.$controller,
           keys = _reviseArgumentsOfNam3.keys,
           binders = _reviseArgumentsOfNam3.other;
 
@@ -287,9 +287,9 @@ var Xvent = function () {
     value: function getSource(name, key) {
       var space = void 0;
       if (name === null) {
-        space = this.namespace[_config.DEFAULT];
+        space = this.$controller[_config.DEFAULT];
       } else {
-        space = this.namespace[name] || (this.namespace[name] = {});
+        space = this.$controller[name] || (this.$controller[name] = {});
       }
       return space[key] || (space[key] = new _source2.default(key));
     }

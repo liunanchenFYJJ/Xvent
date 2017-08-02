@@ -1,21 +1,21 @@
 export default class Alias {
-  constructor(xvent, namespace) {
+  constructor(xvent, controller) {
     this.xvent = xvent;
-    this.namespace = namespace;
+    this.$controller = controller;
   }
 
   bind(...arg) {
-    this.xvent.bind(this.namespace, ...arg);
+    this.xvent.bind(this.$controller, ...arg);
     return this
   }
 
   on(...arg) {
-    this.xvent.on(this.namespace, ...arg);
+    this.xvent.on(this.$controller, ...arg);
     return this
   }
 
-  customize(...arg) {
-    this.xvent.customize(this.namespace, ...arg);
+  dispatch(...arg) {
+    this.xvent.dispatch(this.$controller, ...arg);
     return this
   }
 }

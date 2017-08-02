@@ -1,8 +1,8 @@
-import {Observable, Subject} from 'rxjs-es'
+import {Observable, BehaviorSubject} from 'rxjs-es'
 export default class Source {
-  constructor(name) {
+  constructor(name,controller) {
     this.name = name;
-    this.origin = new Subject();
+    this.flow = controller.$flows.raw
     this.updaters = [];
     this.customize = false;
   }
@@ -10,7 +10,7 @@ export default class Source {
   sub(updater, needTrace) {
     needTrace && this.updaters.push(updater);
     let {action} = updater;
-    updater.subscription = this.origin.subscribe(next => {
+    updater.subscription = this.flow.subscribe(next => {
       if (this.customize) {
         action.next(next)
       } else {
@@ -21,7 +21,7 @@ export default class Source {
         } else if (value instanceof Observable) {
           observable = value
         } else {
-          observable = Observable.of(value);
+          return action.next(value, key)
         }
         observable.subscribe({
           next(value){
@@ -39,7 +39,7 @@ export default class Source {
   }
 
   pub(key, value) {
-    this.origin.next({
+    this.flow.next({
       key,
       value,
     });
@@ -47,6 +47,6 @@ export default class Source {
 
   replace(func) {
     this.customize = true;
-    this.origin = func(this.origin)
+    this.flow = func(this.flow)
   }
 }
