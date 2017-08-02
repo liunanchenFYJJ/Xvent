@@ -1,12 +1,7 @@
 import Controller from './controller'
-import Updater from './updater'
-import namespace from './namespace'
-import Source from './source'
 import Alias from './alias'
-import {DEFAULT} from './config'
 import {
   toArray,
-  reviseArgumentsOfNamespace,
   generateSubscriber,
 } from './tool'
 import {
@@ -15,7 +10,6 @@ import {
 } from './config'
 class Xvent {
   constructor() {
-    this.$controller = {}
     this.$controllers = {}
     this.lazySubController = {};
   }
