@@ -1,6 +1,6 @@
 let privateMap = new WeakMap();
 export default {
-  get(obj, key){
+  get(obj, key) {
     try {
       if (privateMap.has(obj)) {
         return privateMap.get(obj)[key]
@@ -11,7 +11,7 @@ export default {
       throw err
     }
   },
-  set(obj, key, value){
+  set(obj, key, value) {
     try {
       if (privateMap.has(obj)) {
         privateMap.get(obj)[key] = value
@@ -20,7 +20,7 @@ export default {
       throw err
     }
   },
-  init(obj, initial){
+  init(obj, initial) {
     privateMap.set(obj, initial)
-  }
+  },
 }
