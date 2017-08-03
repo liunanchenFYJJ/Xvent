@@ -35,17 +35,20 @@ var Xvent = function () {
 
     this.$controllers = {};
     this.$lazySubs = {};
+    this.$subInfo = {};
   }
 
   (0, _createClass3.default)(Xvent, [{
     key: 'dispatch',
     value: function dispatch(controllerName, flow, value) {
-      // this.lazySub(controller.name, key);
+      this.checkLazySubs(controllerName, flow);
       (0, _tool.pub)(this.$controllers[controllerName], flow, value);
     }
   }, {
     key: 'on',
     value: function on(controllerName, flows, actions) {
+      var _this = this;
+
       var _iteratorNormalCompletion = true;
       var _didIteratorError = false;
       var _iteratorError = undefined;
@@ -53,6 +56,18 @@ var Xvent = function () {
       try {
         for (var _iterator = (0, _getIterator3.default)((0, _tool.toArray)(flows)), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
           var flow = _step.value;
+
+          var _loop = function _loop(action) {
+            var controller = _this.$controllers[controllerName];
+            if (flow instanceof RegExp) {
+              _this.resolveRegex(controllerName, flow, function () {
+                return action;
+              });
+            } else {
+              (0, _tool.sub)(controller, flow, action);
+            }
+          };
+
           var _iteratorNormalCompletion2 = true;
           var _didIteratorError2 = false;
           var _iteratorError2 = undefined;
@@ -61,13 +76,7 @@ var Xvent = function () {
             for (var _iterator2 = (0, _getIterator3.default)((0, _tool.toArray)(actions)), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
               var action = _step2.value;
 
-              var controller = this.$controllers[controllerName];
-              var observer = (0, _tool.generateSubscriber)(action);
-              if (flow === '*') {
-                this.resolveAsterisk(controllerName, observer);
-              } else {
-                (0, _tool.sub)(controller, flow, observer);
-              }
+              _loop(action);
             }
           } catch (err) {
             _didIteratorError2 = true;
@@ -104,18 +113,22 @@ var Xvent = function () {
   }, {
     key: 'bind',
     value: function bind(controllerName, flows, binders) {
-      var _this = this;
+      var _this2 = this;
 
-      var _loop = function _loop(flow) {
-        var _loop2 = function _loop2(binder) {
-          var controller = _this.$controllers[controllerName];
-          // let observer = generateSubscriber(action);
-          if (flow === '*') {
-            _this.resolveAsterisk();
+      var _loop2 = function _loop2(flow) {
+        var _loop3 = function _loop3(binder) {
+          var controller = _this2.$controllers[controllerName];
+          if (flow instanceof RegExp) {
+            _this2.resolveRegex(controllerName, flow, function (flow) {
+              return function (value) {
+                binder[flow] = value;
+              };
+            });
+          } else {
+            (0, _tool.sub)(controller, flow, function (value) {
+              binder[flow] = value;
+            });
           }
-          (0, _tool.sub)(controller, flow, function (value) {
-            binder[flow] = value;
-          });
         };
 
         var _iteratorNormalCompletion4 = true;
@@ -126,7 +139,7 @@ var Xvent = function () {
           for (var _iterator4 = (0, _getIterator3.default)((0, _tool.toArray)(binders)), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
             var binder = _step4.value;
 
-            _loop2(binder);
+            _loop3(binder);
           }
         } catch (err) {
           _didIteratorError4 = true;
@@ -152,7 +165,7 @@ var Xvent = function () {
         for (var _iterator3 = (0, _getIterator3.default)((0, _tool.toArray)(flows)), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
           var flow = _step3.value;
 
-          _loop(flow);
+          _loop2(flow);
         }
       } catch (err) {
         _didIteratorError3 = true;
@@ -172,20 +185,45 @@ var Xvent = function () {
       return this;
     }
   }, {
-    key: 'lazySub',
-    value: function lazySub(namespace, key) {
-      if (this.$lazySubs[namespace]) {
+    key: 'controller',
+    value: function controller(name) {
+      return this.$controllers[name] = new _controller2.default(name);
+    }
+  }, {
+    key: 'controllerAs',
+    value: function controllerAs(controller) {
+      return new _alias2.default(this, controller);
+    }
+  }, {
+    key: 'resolveRegex',
+    value: function resolveRegex(controller, flowRegex, observerFactory) {
+      if (!this.$lazySubs[controller]) {
+        this.$lazySubs[controller] = [];
+      }
+      this.$lazySubs[controller].push({
+        flowRegex: flowRegex,
+        subs: {},
+        observerFactory: observerFactory
+      });
+    }
+  }, {
+    key: 'checkLazySubs',
+    value: function checkLazySubs(controller, flow) {
+      var lazySubs = this.$lazySubs[controller];
+      if (lazySubs) {
         var _iteratorNormalCompletion5 = true;
         var _didIteratorError5 = false;
         var _iteratorError5 = undefined;
 
         try {
-          for (var _iterator5 = (0, _getIterator3.default)(this.$lazySubs[namespace]), _step5; !(_iteratorNormalCompletion5 = (_step5 = _iterator5.next()).done); _iteratorNormalCompletion5 = true) {
+          for (var _iterator5 = (0, _getIterator3.default)(lazySubs), _step5; !(_iteratorNormalCompletion5 = (_step5 = _iterator5.next()).done); _iteratorNormalCompletion5 = true) {
             var lazy = _step5.value;
 
-            if (!lazy.keys[key]) {
-              lazy.keys[key] = true;
-              this.getSource(namespace, key).sub(lazy.getUpdater(key), true);
+            if (!lazy.subs[flow]) {
+              if (lazy.flowRegex.test(flow)) {
+                lazy.subs[flow] = true;
+                (0, _tool.sub)(this.$controllers[controller], flow, lazy.observerFactory(flow));
+              }
             }
           }
         } catch (err) {
@@ -203,29 +241,6 @@ var Xvent = function () {
           }
         }
       }
-    }
-  }, {
-    key: 'controller',
-    value: function controller(name) {
-      return this.$controllers[name] = new _controller2.default(this, name);
-    }
-  }, {
-    key: 'controllerAs',
-    value: function controllerAs(controller) {
-      return new _alias2.default(this, controller);
-    }
-  }, {
-    key: 'resolveAsterisk',
-    value: function resolveAsterisk(controller, flow, observer) {
-      if (!this.$lazySubs[controller]) {
-        this.$lazySubs[controller] = [];
-      }
-      this.$lazySubs[namespace].push({
-        getUpdater: function getUpdater(key) {
-          return updaterFactory(key);
-        },
-        keys: {}
-      });
     }
   }]);
   return Xvent;

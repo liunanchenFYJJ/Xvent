@@ -2,7 +2,6 @@ import Controller from './controller'
 import Alias from './alias'
 import {
   toArray,
-  generateSubscriber,
   pub,
   sub,
 } from './tool'
@@ -11,10 +10,11 @@ class Xvent {
   constructor() {
     this.$controllers = {}
     this.$lazySubs = {}
+    this.$subInfo = {}
   }
 
   dispatch(controllerName, flow, value) {
-    // this.lazySub(controller.name, key);
+    this.checkLazySubs(controllerName, flow)
     pub(this.$controllers[controllerName], flow, value)
   }
 
@@ -23,11 +23,10 @@ class Xvent {
     for (let flow of toArray(flows)) {
       for (let action of toArray(actions)) {
         let controller = this.$controllers[controllerName]
-        let observer = generateSubscriber(action)
-        if (flow === '*') {
-          this.resolveAsterisk(controllerName, observer)
+        if (flow instanceof RegExp) {
+          this.resolveRegex(controllerName, flow, () => action)
         } else {
-          sub(controller, flow, observer)
+          sub(controller, flow, action)
         }
       }
     }
@@ -38,48 +37,51 @@ class Xvent {
     for (let flow of toArray(flows)) {
       for (let binder of toArray(binders)) {
         let controller = this.$controllers[controllerName]
-        // let observer = generateSubscriber(action);
-        if (flow === '*') {
-          this.resolveAsterisk()
+        if (flow instanceof RegExp) {
+          this.resolveRegex(controllerName, flow, flow => value => {
+            binder[flow] = value
+          })
+        } else {
+          sub(controller, flow, value => {
+            binder[flow] = value
+          })
         }
-        sub(controller, flow, value => {
-          binder[flow] = value
-        })
       }
     }
     return this
   }
 
-
-  lazySub(namespace, key) {
-    if (this.$lazySubs[namespace]) {
-      for (let lazy of this.$lazySubs[namespace]) {
-        if (!lazy.keys[key]) {
-          lazy.keys[key] = true;
-          this.getSource(namespace, key).sub(lazy.getUpdater(key), true)
-        }
-      }
-    }
-  }
-
   controller(name) {
-    return this.$controllers[name] = new Controller(this, name)
+    return this.$controllers[name] = new Controller(name)
   }
 
   controllerAs(controller) {
     return new Alias(this, controller)
   }
 
-  resolveAsterisk(controller, flow, observer) {
+  resolveRegex(controller, flowRegex, observerFactory) {
     if (!this.$lazySubs[controller]) {
       this.$lazySubs[controller] = []
     }
-    this.$lazySubs[namespace].push({
-      getUpdater: (key) => {
-        return updaterFactory(key)
-      },
-      keys: {},
+    this.$lazySubs[controller].push({
+      flowRegex,
+      subs: {},
+      observerFactory,
     })
+  }
+
+  checkLazySubs(controller, flow) {
+    let lazySubs = this.$lazySubs[controller]
+    if (lazySubs) {
+      for (let lazy of lazySubs) {
+        if (!lazy.subs[flow]) {
+          if (lazy.flowRegex.test(flow)) {
+            lazy.subs[flow] = true;
+            sub(this.$controllers[controller], flow, lazy.observerFactory(flow))
+          }
+        }
+      }
+    }
   }
 }
 
