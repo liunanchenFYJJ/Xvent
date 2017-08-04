@@ -31,8 +31,8 @@ var Controller = function () {
   }
 
   (0, _createClass3.default)(Controller, [{
-    key: 'create',
-    value: function create(flowName, func, immediatelyPubWhenSub, initial) {
+    key: 'define',
+    value: function define(flowName, func, immediatelyPubWhenSub, initial) {
       var subject = new _rxjsEs.Subject();
       if (immediatelyPubWhenSub) {
         subject = new _rxjsEs.BehaviorSubject(initial);

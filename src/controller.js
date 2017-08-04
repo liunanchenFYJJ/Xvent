@@ -10,7 +10,7 @@ export default class Controller {
     this.immediatePub = []
   }
 
-  create(flowName, func, immediatelyPubWhenSub, initial) {
+  define(flowName, func, immediatelyPubWhenSub, initial) {
     let subject = new Subject()
     if (immediatelyPubWhenSub) {
       subject = new BehaviorSubject(initial)

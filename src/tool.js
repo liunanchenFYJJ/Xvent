@@ -17,6 +17,9 @@ export function pub(controller, flow, value) {
 }
 
 export function sub(controller, flow, observer) {
-  controller.$flows.processed[flow].subscribe(observer)
-  controller.$listeners[flow].push(observer)
+  let subscription = controller.$flows.processed[flow].subscribe(observer)
+  controller.$listeners[flow].push({
+    subscription,
+    observer,
+  })
 }

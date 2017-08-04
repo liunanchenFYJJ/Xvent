@@ -18,13 +18,17 @@ class Xvent {
     pub(this.$controllers[controllerName], flow, value)
   }
 
-
   on(controllerName, flows, actions) {
     for (let flow of toArray(flows)) {
       for (let action of toArray(actions)) {
         let controller = this.$controllers[controllerName]
         if (flow instanceof RegExp) {
           this.resolveRegex(controllerName, flow, () => action)
+          if (controller.immediatePub.length) {
+            for (let immediatePub of controller.immediatePub) {
+              this.checkLazySubs(controllerName, immediatePub)
+            }
+          }
         } else {
           sub(controller, flow, action)
         }
@@ -41,6 +45,11 @@ class Xvent {
           this.resolveRegex(controllerName, flow, flow => value => {
             binder[flow] = value
           })
+          if (controller.immediatePub.length) {
+            for (let immediatePub of controller.immediatePub) {
+              this.checkLazySubs(controllerName, immediatePub)
+            }
+          }
         } else {
           sub(controller, flow, value => {
             binder[flow] = value

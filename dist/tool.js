@@ -26,6 +26,9 @@ function pub(controller, flow, value) {
 }
 
 function sub(controller, flow, observer) {
-  controller.$flows.processed[flow].subscribe(observer);
-  controller.$listeners[flow].push(observer);
+  var subscription = controller.$flows.processed[flow].subscribe(observer);
+  controller.$listeners[flow].push({
+    subscription: subscription,
+    observer: observer
+  });
 }

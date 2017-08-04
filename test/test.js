@@ -26,7 +26,7 @@ function ajax(result, delay) {
 }
 
 app
-  .create(
+  .define(
     'click',
     origin =>
       origin
@@ -36,14 +36,13 @@ app
           // appAlias.dispatch('epc', data)
         })
   )
-  .create('epc', origin =>
+  .define('epc', origin =>
     origin.do(log2)
   )
-  .create('nameBind', null, true, 'somebody')
-  .create('name.log2', null, true, 'daidai')
+  .define('name', null, true, 'somebody')
 
 time
-  .create(
+  .define(
     'update',
     origin => origin.map(time => new Date()),
     true,
@@ -53,13 +52,14 @@ time
 appAlias
 // .on('click', log)
   .on(/.*/, log)
-  .on(/.log2/, log2)
-  .bind(/Bind\b/, a)
+  // .on(/.*/, log2)
+  // .on('name', log3)
+  // .on(/.log2/, log2)
+  // .bind(/Bind\b/, a)
 // timeAlias.on('update', log3)
 
 // appAlias.dispatch('click', '???')
-appAlias.dispatch('name.log2', 'wenxu')
-appAlias.dispatch('nameBind', 'other')
+// appAlias.dispatch('name', 'wenxu')
 
 window.x = x
 window.a = a
