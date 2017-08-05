@@ -46,7 +46,7 @@ var Xvent = function () {
     }
   }, {
     key: 'on',
-    value: function on(controllerName, flows, actions) {
+    value: function on(controllerName, flows, observers) {
       var _this = this;
 
       var _iteratorNormalCompletion = true;
@@ -57,41 +57,10 @@ var Xvent = function () {
         for (var _iterator = (0, _getIterator3.default)((0, _tool.toArray)(flows)), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
           var flow = _step.value;
 
-          var _loop = function _loop(action) {
-            var controller = _this.$controllers[controllerName];
-            if (flow instanceof RegExp) {
-              _this.resolveRegex(controllerName, flow, function () {
-                return action;
-              });
-              if (controller.immediatePub.length) {
-                var _iteratorNormalCompletion3 = true;
-                var _didIteratorError3 = false;
-                var _iteratorError3 = undefined;
-
-                try {
-                  for (var _iterator3 = (0, _getIterator3.default)(controller.immediatePub), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
-                    var immediatePub = _step3.value;
-
-                    _this.checkLazySubs(controllerName, immediatePub);
-                  }
-                } catch (err) {
-                  _didIteratorError3 = true;
-                  _iteratorError3 = err;
-                } finally {
-                  try {
-                    if (!_iteratorNormalCompletion3 && _iterator3.return) {
-                      _iterator3.return();
-                    }
-                  } finally {
-                    if (_didIteratorError3) {
-                      throw _iteratorError3;
-                    }
-                  }
-                }
-              }
-            } else {
-              (0, _tool.sub)(controller, flow, action);
-            }
+          var _loop = function _loop(observer) {
+            _this.listen(controllerName, flow, observer, function () {
+              return observer;
+            });
           };
 
           var _iteratorNormalCompletion2 = true;
@@ -99,10 +68,10 @@ var Xvent = function () {
           var _iteratorError2 = undefined;
 
           try {
-            for (var _iterator2 = (0, _getIterator3.default)((0, _tool.toArray)(actions)), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
-              var action = _step2.value;
+            for (var _iterator2 = (0, _getIterator3.default)((0, _tool.toArray)(observers)), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+              var observer = _step2.value;
 
-              _loop(action);
+              _loop(observer);
             }
           } catch (err) {
             _didIteratorError2 = true;
@@ -143,93 +112,62 @@ var Xvent = function () {
 
       var _loop2 = function _loop2(flow) {
         var _loop3 = function _loop3(binder) {
-          var controller = _this2.$controllers[controllerName];
-          if (flow instanceof RegExp) {
-            _this2.resolveRegex(controllerName, flow, function (flow) {
-              return function (value) {
-                binder[flow] = value;
-              };
-            });
-            if (controller.immediatePub.length) {
-              var _iteratorNormalCompletion6 = true;
-              var _didIteratorError6 = false;
-              var _iteratorError6 = undefined;
-
-              try {
-                for (var _iterator6 = (0, _getIterator3.default)(controller.immediatePub), _step6; !(_iteratorNormalCompletion6 = (_step6 = _iterator6.next()).done); _iteratorNormalCompletion6 = true) {
-                  var immediatePub = _step6.value;
-
-                  _this2.checkLazySubs(controllerName, immediatePub);
-                }
-              } catch (err) {
-                _didIteratorError6 = true;
-                _iteratorError6 = err;
-              } finally {
-                try {
-                  if (!_iteratorNormalCompletion6 && _iterator6.return) {
-                    _iterator6.return();
-                  }
-                } finally {
-                  if (_didIteratorError6) {
-                    throw _iteratorError6;
-                  }
-                }
-              }
-            }
-          } else {
-            (0, _tool.sub)(controller, flow, function (value) {
-              binder[flow] = value;
-            });
-          }
+          _this2.listen(controllerName, flow, function (value) {
+            return binder[flow] = value;
+          }, function (flow) {
+            return function (value) {
+              return binder[flow] = value;
+            };
+          });
         };
 
-        var _iteratorNormalCompletion5 = true;
-        var _didIteratorError5 = false;
-        var _iteratorError5 = undefined;
+        var _iteratorNormalCompletion4 = true;
+        var _didIteratorError4 = false;
+        var _iteratorError4 = undefined;
 
         try {
-          for (var _iterator5 = (0, _getIterator3.default)((0, _tool.toArray)(binders)), _step5; !(_iteratorNormalCompletion5 = (_step5 = _iterator5.next()).done); _iteratorNormalCompletion5 = true) {
-            var binder = _step5.value;
+          for (var _iterator4 = (0, _getIterator3.default)((0, _tool.toArray)(binders)), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
+            var binder = _step4.value;
 
             _loop3(binder);
           }
         } catch (err) {
-          _didIteratorError5 = true;
-          _iteratorError5 = err;
+          _didIteratorError4 = true;
+          _iteratorError4 = err;
         } finally {
           try {
-            if (!_iteratorNormalCompletion5 && _iterator5.return) {
-              _iterator5.return();
+            if (!_iteratorNormalCompletion4 && _iterator4.return) {
+              _iterator4.return();
             }
           } finally {
-            if (_didIteratorError5) {
-              throw _iteratorError5;
+            if (_didIteratorError4) {
+              throw _iteratorError4;
             }
           }
         }
       };
 
-      var _iteratorNormalCompletion4 = true;
-      var _didIteratorError4 = false;
-      var _iteratorError4 = undefined;
+      var _iteratorNormalCompletion3 = true;
+      var _didIteratorError3 = false;
+      var _iteratorError3 = undefined;
 
       try {
-        for (var _iterator4 = (0, _getIterator3.default)((0, _tool.toArray)(flows)), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
-          var flow = _step4.value;
+        for (var _iterator3 = (0, _getIterator3.default)((0, _tool.toArray)(flows)), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
+          var flow = _step3.value;
 
           _loop2(flow);
         }
       } catch (err) {
-        _didIteratorError4 = true;
-        _iteratorError4 = err;
+        _didIteratorError3 = true;
+        _iteratorError3 = err;
       } finally {
         try {
-          if (!_iteratorNormalCompletion4 && _iterator4.return) {
-            _iterator4.return();
+          if (!_iteratorNormalCompletion3 && _iterator3.return) {
+            _iterator3.return();
           }
         } finally {
-          if (_didIteratorError4) {
-            throw _iteratorError4;
+          if (_didIteratorError3) {
+            throw _iteratorError3;
           }
         }
       }
@@ -237,22 +175,58 @@ var Xvent = function () {
       return this;
     }
   }, {
+    key: 'listen',
+    value: function listen(controllerName, flow, observer, observerFactory) {
+      var controller = this.$controllers[controllerName];
+      if (flow instanceof RegExp) {
+        this.resolveRegex(controllerName, flow, observerFactory);
+        if (controller.immediatePub.length) {
+          var _iteratorNormalCompletion5 = true;
+          var _didIteratorError5 = false;
+          var _iteratorError5 = undefined;
+
+          try {
+            for (var _iterator5 = (0, _getIterator3.default)(controller.immediatePub), _step5; !(_iteratorNormalCompletion5 = (_step5 = _iterator5.next()).done); _iteratorNormalCompletion5 = true) {
+              var immediatePub = _step5.value;
+
+              this.checkLazySubs(controllerName, immediatePub);
+            }
+          } catch (err) {
+            _didIteratorError5 = true;
+            _iteratorError5 = err;
+          } finally {
+            try {
+              if (!_iteratorNormalCompletion5 && _iterator5.return) {
+                _iterator5.return();
+              }
+            } finally {
+              if (_didIteratorError5) {
+                throw _iteratorError5;
+              }
+            }
+          }
+        }
+      } else {
+        (0, _tool.sub)(controller, flow, observer);
+      }
+    }
+  }, {
     key: 'controller',
     value: function controller(name) {
       return this.$controllers[name] = new _controller2.default(name);
     }
   }, {
-    key: 'controllerAs',
-    value: function controllerAs(controller) {
+    key: 'space',
+    value: function space(controller) {
       return new _alias2.default(this, controller);
     }
   }, {
     key: 'resolveRegex',
-    value: function resolveRegex(controller, flowRegex, observerFactory) {
-      if (!this.$lazySubs[controller]) {
-        this.$lazySubs[controller] = [];
+    value: function resolveRegex(controllerName, flowRegex, observerFactory) {
+      if (!this.$lazySubs[controllerName]) {
+        this.$lazySubs[controllerName] = [];
       }
-      this.$lazySubs[controller].push({
+      this.$lazySubs[controllerName].push({
         flowRegex: flowRegex,
         subs: {},
         observerFactory: observerFactory
@@ -263,13 +237,13 @@ var Xvent = function () {
     value: function checkLazySubs(controller, flow) {
       var lazySubs = this.$lazySubs[controller];
       if (lazySubs) {
-        var _iteratorNormalCompletion7 = true;
-        var _didIteratorError7 = false;
-        var _iteratorError7 = undefined;
+        var _iteratorNormalCompletion6 = true;
+        var _didIteratorError6 = false;
+        var _iteratorError6 = undefined;
 
         try {
-          for (var _iterator7 = (0, _getIterator3.default)(lazySubs), _step7; !(_iteratorNormalCompletion7 = (_step7 = _iterator7.next()).done); _iteratorNormalCompletion7 = true) {
-            var lazy = _step7.value;
+          for (var _iterator6 = (0, _getIterator3.default)(lazySubs), _step6; !(_iteratorNormalCompletion6 = (_step6 = _iterator6.next()).done); _iteratorNormalCompletion6 = true) {
+            var lazy = _step6.value;
 
             if (!lazy.subs[flow]) {
               if (lazy.flowRegex.test(flow)) {
@@ -279,16 +253,16 @@ var Xvent = function () {
             }
           }
         } catch (err) {
-          _didIteratorError7 = true;
-          _iteratorError7 = err;
+          _didIteratorError6 = true;
+          _iteratorError6 = err;
         } finally {
           try {
-            if (!_iteratorNormalCompletion7 && _iterator7.return) {
-              _iterator7.return();
+            if (!_iteratorNormalCompletion6 && _iterator6.return) {
+              _iterator6.return();
             }
           } finally {
-            if (_didIteratorError7) {
-              throw _iteratorError7;
+            if (_didIteratorError6) {
+              throw _iteratorError6;
             }
           }
         }

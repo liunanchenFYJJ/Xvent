@@ -18,20 +18,10 @@ class Xvent {
     pub(this.$controllers[controllerName], flow, value)
   }
 
-  on(controllerName, flows, actions) {
+  on(controllerName, flows, observers) {
     for (let flow of toArray(flows)) {
-      for (let action of toArray(actions)) {
-        let controller = this.$controllers[controllerName]
-        if (flow instanceof RegExp) {
-          this.resolveRegex(controllerName, flow, () => action)
-          if (controller.immediatePub.length) {
-            for (let immediatePub of controller.immediatePub) {
-              this.checkLazySubs(controllerName, immediatePub)
-            }
-          }
-        } else {
-          sub(controller, flow, action)
-        }
+      for (let observer of toArray(observers)) {
+        this.listen(controllerName, flow, observer, () => observer)
       }
     }
     return this
@@ -40,39 +30,44 @@ class Xvent {
   bind(controllerName, flows, binders) {
     for (let flow of toArray(flows)) {
       for (let binder of toArray(binders)) {
-        let controller = this.$controllers[controllerName]
-        if (flow instanceof RegExp) {
-          this.resolveRegex(controllerName, flow, flow => value => {
-            binder[flow] = value
-          })
-          if (controller.immediatePub.length) {
-            for (let immediatePub of controller.immediatePub) {
-              this.checkLazySubs(controllerName, immediatePub)
-            }
-          }
-        } else {
-          sub(controller, flow, value => {
-            binder[flow] = value
-          })
-        }
+        this.listen(
+          controllerName,
+          flow,
+          value => binder[flow] = value,
+          flow => value => binder[flow] = value
+        )
       }
     }
     return this
+  }
+
+  listen(controllerName, flow, observer, observerFactory) {
+    let controller = this.$controllers[controllerName]
+    if (flow instanceof RegExp) {
+      this.resolveRegex(controllerName, flow, observerFactory)
+      if (controller.immediatePub.length) {
+        for (let immediatePub of controller.immediatePub) {
+          this.checkLazySubs(controllerName, immediatePub)
+        }
+      }
+    } else {
+      sub(controller, flow, observer)
+    }
   }
 
   controller(name) {
     return this.$controllers[name] = new Controller(name)
   }
 
-  controllerAs(controller) {
+  space(controller) {
     return new Alias(this, controller)
   }
 
-  resolveRegex(controller, flowRegex, observerFactory) {
-    if (!this.$lazySubs[controller]) {
-      this.$lazySubs[controller] = []
+  resolveRegex(controllerName, flowRegex, observerFactory) {
+    if (!this.$lazySubs[controllerName]) {
+      this.$lazySubs[controllerName] = []
     }
-    this.$lazySubs[controller].push({
+    this.$lazySubs[controllerName].push({
       flowRegex,
       subs: {},
       observerFactory,

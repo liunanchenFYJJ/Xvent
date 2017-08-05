@@ -13,13 +13,17 @@ export function generateSubscriber(action) {
 }
 
 export function pub(controller, flow, value) {
-  controller.$flows.raw[flow].next(value)
+  controller.$flows[flow].next(value)
 }
 
 export function sub(controller, flow, observer) {
-  let subscription = controller.$flows.processed[flow].subscribe(observer)
+  let subscription = controller.$flows[flow].subscribe(observer)
   controller.$listeners[flow].push({
     subscription,
     observer,
   })
+  return subscription
+}
+
+export function empty() {
 }

@@ -1,27 +1,25 @@
 import {Subject, BehaviorSubject} from 'rxjs-es'
+import {empty} from './tool'
 export default class Controller {
   constructor(name = null) {
     this.name = name
-    this.$flows = {
-      raw: {},
-      processed: {},
-    }
+    this.$flows = {}
     this.$listeners = {}
     this.immediatePub = []
   }
 
-  define(flowName, func, immediatelyPubWhenSub, initial) {
+  define(flowName, func, behaviorInitial) {
     let subject = new Subject()
-    if (immediatelyPubWhenSub) {
-      subject = new BehaviorSubject(initial)
+    if (behaviorInitial) {
+      subject = new BehaviorSubject(behaviorInitial)
       this.immediatePub.push(flowName)
     }
     let newSubject = subject
     if (typeof func === 'function') {
       newSubject = func(subject)
     }
-    this.$flows.raw[flowName] = subject
-    this.$flows.processed[flowName] = newSubject
+    newSubject.subscribe(empty)
+    this.$flows[flowName] = newSubject
     this.$listeners[flowName] = []
     return this
   }

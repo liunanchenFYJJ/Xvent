@@ -3,8 +3,8 @@ import {Observable} from 'rxjs-es'
 
 let app = x.controller('app');
 let time = x.controller('time');
-let appAlias = x.controllerAs('app')
-let timeAlias = x.controllerAs('time')
+let appAlias = x.space('app')
+let timeAlias = x.space('time')
 function log(v) {
   console.log('log: ', v)
 }
@@ -17,6 +17,27 @@ function log3(v) {
 
 let a = {}
 let b = {}
+let epcs = [
+  {
+    id: 1,
+    name: 'demo',
+  },
+  {
+    id: 2,
+    name: 'admin',
+  },
+]
+let ips = [
+  {
+    epc: 'demo',
+    ip: '0.0.0.0',
+  },
+  {
+    epc: 'admin',
+    ip: '1.1.1.1',
+  },
+]
+
 function ajax(result, delay) {
   return new Promise((resolve, reject) => {
     setTimeout(() => {
@@ -27,11 +48,14 @@ function ajax(result, delay) {
 
 app
   .define(
-    'click',
+    'mounted',
     origin =>
       origin
+        .do(() => {
+          log2('start')
+        })
         .mergeMap(
-          data => Observable.fromPromise(ajax('click of ' + data, 1000)))
+          data => Observable.fromPromise(ajax(epcs, 1000)))
         .do(data => {
           // appAlias.dispatch('epc', data)
         })
@@ -39,28 +63,17 @@ app
   .define('epc', origin =>
     origin.do(log2)
   )
-  .define('name', null, true, 'somebody')
+  .define('name', null, 'somebody')
 
 time
   .define(
     'update',
     origin => origin.map(time => new Date()),
-    true,
     new Date()
   )
 
-appAlias
-// .on('click', log)
-  .on(/.*/, log)
-  // .on(/.*/, log2)
-  // .on('name', log3)
-  // .on(/.log2/, log2)
-  // .bind(/Bind\b/, a)
-// timeAlias.on('update', log3)
-
-// appAlias.dispatch('click', '???')
-// appAlias.dispatch('name', 'wenxu')
-
+// appAlias.on('mounted', log3)
+appAlias.dispatch('mounted')
 window.x = x
 window.a = a
 window.b = b
