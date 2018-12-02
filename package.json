@@ -1,40 +1,26 @@
 {
-  "name": "xvent",
-  "version": "3.1.6",
-  "description": "",
-  "main": "index.js",
-  "scripts": {
-    "build:test": "./node_modules/.bin/webpack --env=test --progress --profile --colors -w",
-    "build:dist": "./node_modules/.bin/babel src -d dist",
-    "eslint": "./node_modules/.bin/eslint --color src/",
-    "pub": "npm run build:dist && npm publish"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/luwenxull/Xvent.git"
-  },
-  "keywords": [
-    "Rx",
-    "event"
-  ],
-  "author": "",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/luwenxull/Xvent/issues"
-  },
-  "homepage": "https://github.com/luwenxull/Xvent#readme",
-  "dependencies": {
-    "babel-runtime": "^6.23.0",
-    "rxjs-es": "^5.0.0-beta.12"
-  },
+  "name": "@luwenxull/xvent",
+  "version": "0.1.0",
+  "main": "lib/index.js",
+  "repository": "https://github.com/luwenxull/xvent",
+  "author": "luwenxull <992273307@qq.com>",
+  "license": "MIT",
   "devDependencies": {
-    "babel-cli": "^6.24.1",
-    "babel-core": "^6.25.0",
-    "babel-loader": "^7.0.0",
-    "babel-plugin-transform-runtime": "^6.23.0",
-    "babel-preset-env": "^1.5.2",
-    "eslint": "^4.3.0",
-    "eslint-config-google": "^0.9.1",
-    "webpack": "^2.6.1"
+    "@types/jest": "^23.3.10",
+    "@types/lodash": "^4.14.118",
+    "jest": "^23.6.0",
+    "prettier": "^1.15.3",
+    "ts-jest": "^23.10.5",
+    "typescript": "^3.2.1"
+  },
+  "dependencies": {
+    "lodash": "^4.17.11",
+    "rxjs": "^6.3.3"
+  },
+  "scripts": {
+    "test": "jest --verbose",
+    "build": "tsc",
+    "prettier": "prettier --write ./src/*.ts ./lib/*.js ./lib/*.d.ts",
+    "pub": "npm publish --access=public"
   }
 }
