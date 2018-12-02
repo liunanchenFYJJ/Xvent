@@ -1,5 +1,5 @@
 import { map, delay, mapTo } from 'rxjs/operators'
-import { create, provider, zip } from '../store'
+import { create, provider, zip, self } from '../store'
 import { Observable } from 'rxjs';
 
 test('create', () => {
@@ -46,6 +46,10 @@ test('watch', () => {
     expect(v).toBe(10)
   })
   expect(fn.mock.calls).toEqual([[10]])
+  const fn2 = jest.fn()
+  updator.age.watch(fn2)
+  updator.age(11)
+  expect(fn2.mock.calls).toEqual([[10]])
 })
 
 test('zip', () => {
@@ -60,4 +64,11 @@ test('zip', () => {
     expect(v).toBe(10)
     expect(n).toBe('wenxu')
   })
+})
+
+test('self', () => {
+  const {updator} = create({
+    name: self<string>()
+  })
+  expect(updator.name('wenxu')).toBe('wenxu')
 })

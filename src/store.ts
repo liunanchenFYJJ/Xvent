@@ -5,6 +5,15 @@ import { unifyObserver, deliver, removeFromArray } from './util';
 export type ArbitraryFunc = (...args: any[]) => any; // 任意函数
 
 /**
+ * Watah方法
+ */
+export type Watch<Output> = (
+  next?: PartialObserver<Output> | Observer_Next<Output>,
+  error?: Observer_Error,
+  complete?: Observer_Complete
+) => () => void;
+
+/**
  * observable数据读取封装
  *
  * @export
@@ -42,7 +51,7 @@ export interface IReaderProvider<Input, Output> {
 export type OutputFn<T> = T extends IReaderProvider<infer Input, infer Output>
   ? IReaderProvider<Input, Output>
   : T extends ArbitraryFunc
-  ? T
+  ? T & { watch: Watch<ReturnType<T>> }
   : () => T;
 
 export type SnapshotValue<T> = T extends IReaderProvider<any, infer Output>
@@ -76,42 +85,6 @@ function isProvider(fn: any): fn is IReaderProvider<any, any> {
 
 function isReader(fn: any): fn is IReader<any> {
   return fn.__isReader;
-}
-
-export function create<Description extends { [prop: string]: any }>(
-  desc: Description
-): {
-  updator: Updator<Description>;
-  snapshot: Snapshot<Description>;
-} {
-  const updator: Partial<Updator<Description>> = {};
-  const snapshot: Partial<Snapshot<Description>> = {};
-  Object.keys(desc).forEach(key => {
-    const value = desc[key];
-    if (typeof value !== 'function') {
-      updator[key] = () => value;
-      // 固定的snapshot值
-      snapshot[key] = value;
-    } else {
-      if (isProvider(value)) {
-        // 自动更新snapshot
-        value.watch(next => {
-          snapshot[key] = next;
-        });
-        updator[key] = value;
-      } else {
-        updator[key] = (...args: any[]) => {
-          // 自动更新snapshot
-          snapshot[key] = value(...args);
-          return snapshot[key];
-        };
-      }
-    }
-  });
-  return {
-    updator: updator as Updator<Description>,
-    snapshot: snapshot as Snapshot<Description>
-  };
 }
 
 /**
@@ -164,6 +137,72 @@ function createReader<Output>(
 }
 
 /**
+ *生成一个watch方法
+ *
+ * @template Output
+ * @param {PartialObserver<Output>[]}
+ * @returns {Watch<Output>}
+ */
+function createWatchMethod<Output>(
+  observers: PartialObserver<Output>[]
+): Watch<Output> {
+  return (
+    next?: PartialObserver<Output> | Observer_Next<Output>,
+    error?: Observer_Error,
+    complete?: Observer_Complete
+  ) => {
+    const observer = unifyObserver(next, error, complete);
+    observers.push(observer);
+    return () => {
+      removeFromArray(observers, observer);
+    };
+  };
+}
+
+export function create<Description extends { [prop: string]: any }>(
+  desc: Description
+): {
+  updator: Updator<Description>;
+  snapshot: Snapshot<Description>;
+} {
+  const updator: Partial<Updator<Description>> = {};
+  const snapshot: Partial<Snapshot<Description>> = {};
+  Object.keys(desc).forEach(key => {
+    const value = desc[key];
+    if (typeof value !== 'function') {
+      updator[key] = () => value;
+      // 固定的snapshot值
+      snapshot[key] = value;
+    } else {
+      if (isProvider(value)) {
+        // 自动更新snapshot
+        value.watch(next => {
+          snapshot[key] = next;
+        });
+        updator[key] = value;
+      } else {
+        const observsers: PartialObserver<ReturnType<typeof fn>>[] = [];
+        const fn = (...args: any[]): ReturnType<typeof value> => {
+          // 自动更新snapshot
+          snapshot[key] = value(...args);
+          // 普通函数只有成功通知
+          deliver(observsers, 'next', snapshot[key]);
+          return snapshot[key];
+        };
+        (fn as any).watch = createWatchMethod<ReturnType<typeof value>>(
+          observsers
+        );
+        updator[key] = fn;
+      }
+    }
+  });
+  return {
+    updator: updator as Updator<Description>,
+    snapshot: snapshot as Snapshot<Description>
+  };
+}
+
+/**
  * 生成readerprovider
  *
  * @export
@@ -181,20 +220,18 @@ export function provider<Input, Output>(
     return createReader<Output>(input, outerObservers, operators);
   };
   provider.__isReaderProvider = true;
-  provider.watch = (
-    next?: PartialObserver<Output> | Observer_Next<Output>,
-    error?: Observer_Error,
-    complete?: Observer_Complete
-  ) => {
-    const observer = unifyObserver(next, error, complete);
-    outerObservers.push(observer);
-    return () => {
-      removeFromArray(outerObservers, observer);
-    };
-  };
+  provider.watch = createWatchMethod(outerObservers);
   return provider;
 }
 
+/**
+ * 打包处理reader和普通数据
+ *
+ * @export
+ * @template T
+ * @param {any[]} pendings
+ * @returns {IReader<T>}
+ */
 export function zip<T>(pendings: any[]): IReader<T> {
   const observable = _zip(
     ...pendings.map(v => {
@@ -202,4 +239,17 @@ export function zip<T>(pendings: any[]): IReader<T> {
     })
   );
   return createReader(observable, [], [], true);
+}
+
+/**
+ * 生成一个返回输入的函数
+ *
+ * @export
+ * @template T
+ * @returns
+ */
+export function self<T>() {
+  return (value: T): T => {
+    return value;
+  };
 }

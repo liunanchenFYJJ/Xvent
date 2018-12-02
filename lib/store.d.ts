@@ -2,6 +2,14 @@ import { PartialObserver, Observable } from 'rxjs';
 import { OperatorFunction } from 'rxjs/internal/types';
 export declare type ArbitraryFunc = (...args: any[]) => any;
 /**
+ * Watah方法
+ */
+export declare type Watch<Output> = (
+  next?: PartialObserver<Output> | Observer_Next<Output>,
+  error?: Observer_Error,
+  complete?: Observer_Complete
+) => () => void;
+/**
  * observable数据读取封装
  *
  * @export
@@ -40,7 +48,9 @@ export declare type OutputFn<T> = T extends IReaderProvider<
 >
   ? IReaderProvider<Input, Output>
   : T extends ArbitraryFunc
-  ? T
+  ? T & {
+      watch: Watch<ReturnType<T>>;
+    }
   : () => T;
 export declare type SnapshotValue<T> = T extends IReaderProvider<
   any,
@@ -86,4 +96,20 @@ export declare function create<
 export declare function provider<Input, Output>(
   operators: OperatorFunction<any, any>[]
 ): IReaderProvider<Input, Output>;
+/**
+ * 打包处理reader和普通数据
+ *
+ * @export
+ * @template T
+ * @param {any[]} pendings
+ * @returns {IReader<T>}
+ */
 export declare function zip<T>(pendings: any[]): IReader<T>;
+/**
+ * 生成一个返回输入的函数
+ *
+ * @export
+ * @template T
+ * @returns
+ */
+export declare function self<T>(): (value: T) => T;
