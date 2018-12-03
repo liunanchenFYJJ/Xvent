@@ -1,14 +1,15 @@
 import { PartialObserver, Observable } from 'rxjs';
 import { OperatorFunction } from 'rxjs/internal/types';
 export declare type ArbitraryFunc = (...args: any[]) => any;
-/**
- * Watah方法
- */
-export declare type Watch<Output> = (
+export declare type DisposeMethod = () => void;
+export declare type IAddReaderMethod<Output> = (
   next?: PartialObserver<Output> | Observer_Next<Output>,
   error?: Observer_Error,
   complete?: Observer_Complete
-) => () => void;
+) => DisposeMethod;
+export declare type ExtendedFunc<Func extends ArbitraryFunc, Output> = Func & {
+  addReader: IAddReaderMethod<Output>;
+};
 /**
  * observable数据读取封装
  *
@@ -16,13 +17,8 @@ export declare type Watch<Output> = (
  * @interface IReader
  * @template Output
  */
-export interface IReader<Output> {
-  (
-    next?: PartialObserver<Output> | Observer_Next<Output>,
-    error?: Observer_Error,
-    complete?: Observer_Complete
-  ): () => void;
-  __isReader: boolean;
+export interface IDistributor<Output> extends IAddReaderMethod<Output> {
+  __isDistributor: boolean;
   __observable: Observable<Output>;
 }
 /**
@@ -33,26 +29,19 @@ export interface IReader<Output> {
  * @template Input
  * @template Output
  */
-export interface IReaderProvider<Input, Output> {
-  (input?: Input): IReader<Output>;
-  watch(
-    next?: PartialObserver<Output> | Observer_Next<Output>,
-    error?: Observer_Error,
-    complete?: Observer_Complete
-  ): () => void;
-  __isReaderProvider: boolean;
+export interface IDistributorProvider<Input, Output>
+  extends ExtendedFunc<(input?: Input) => IDistributor<Output>, Output> {
+  __isDistributorProvider: boolean;
 }
-export declare type OutputFn<T> = T extends IReaderProvider<
+export declare type OutputFn<T> = T extends IDistributorProvider<
   infer Input,
   infer Output
 >
-  ? IReaderProvider<Input, Output>
+  ? IDistributorProvider<Input, Output>
   : T extends ArbitraryFunc
-  ? T & {
-      watch: Watch<ReturnType<T>>;
-    }
+  ? ExtendedFunc<T, ReturnType<T>>
   : () => T;
-export declare type SnapshotValue<T> = T extends IReaderProvider<
+export declare type SnapshotValue<T> = T extends IDistributorProvider<
   any,
   infer Output
 >
@@ -91,20 +80,24 @@ export declare function create<
  * @template Input
  * @template Output
  * @param {OperatorFunction<any, any>[]} operators
- * @returns {IReaderProvider<Input, Output>}
+ * @returns {IDistributorProvider<Input, Output>}
  */
 export declare function provider<Input, Output>(
   operators: OperatorFunction<any, any>[]
-): IReaderProvider<Input, Output>;
+): IDistributorProvider<Input, Output>;
+export declare function connect<Output>(
+  source: ExtendedFunc<ArbitraryFunc, Output>,
+  target: ArbitraryFunc
+): DisposeMethod | undefined;
 /**
  * 打包处理reader和普通数据
  *
  * @export
  * @template T
  * @param {any[]} pendings
- * @returns {IReader<T>}
+ * @returns {IDistributor<T>}
  */
-export declare function zip<T>(pendings: any[]): IReader<T>;
+export declare function zip<T>(pendings: any[]): IDistributor<T>;
 /**
  * 生成一个返回输入的函数
  *
@@ -112,4 +105,4 @@ export declare function zip<T>(pendings: any[]): IReader<T>;
  * @template T
  * @returns
  */
-export declare function self<T>(): (value: T) => T;
+export declare function returnSelf<T>(): (value: T) => T;

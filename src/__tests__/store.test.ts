@@ -1,6 +1,5 @@
 import { map, delay, mapTo } from 'rxjs/operators'
-import { create, provider, zip, self } from '../store'
-import { Observable } from 'rxjs';
+import { create, provider, zip, returnSelf, connect } from '../store'
 
 test('create', () => {
   const { updator, snapshot } = create({
@@ -12,6 +11,18 @@ test('create', () => {
   expect(updator.name()).toBe('wenxu')
   expect(updator.age(10)).toBe(9)
   expect(snapshot.age).toBe(9)
+})
+
+test('pipe', () => {
+  const { updator } = create({
+    str: returnSelf<string>()
+  })
+  const { updator : _up, snapshot } = create({
+    chars: (str: string) => str.split('')
+  })
+  connect(updator.str, _up.chars)
+  updator.str('www')
+  expect(snapshot.chars).toEqual(['w','w','w'])
 })
 
 test('provider', done => {
@@ -41,13 +52,13 @@ test('watch', () => {
     ten: provider<any, number>([mapTo(10)])
   })
   const fn = jest.fn()
-  updator.ten.watch(fn)
+  updator.ten.addReader(fn)
   updator.ten()((v: number) => {
     expect(v).toBe(10)
   })
   expect(fn.mock.calls).toEqual([[10]])
   const fn2 = jest.fn()
-  updator.age.watch(fn2)
+  updator.age.addReader(fn2)
   updator.age(11)
   expect(fn2.mock.calls).toEqual([[10]])
 })
@@ -68,7 +79,7 @@ test('zip', () => {
 
 test('self', () => {
   const {updator} = create({
-    name: self<string>()
+    name: returnSelf<string>()
   })
   expect(updator.name('wenxu')).toBe('wenxu')
 })

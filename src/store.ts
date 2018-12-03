@@ -4,14 +4,17 @@ import { unifyObserver, deliver, removeFromArray } from './util';
 
 export type ArbitraryFunc = (...args: any[]) => any; // 任意函数
 
-/**
- * Watah方法
- */
-export type Watch<Output> = (
+export type DisposeMethod = () => void;
+
+export type IAddReaderMethod<Output> = (
   next?: PartialObserver<Output> | Observer_Next<Output>,
   error?: Observer_Error,
   complete?: Observer_Complete
-) => () => void;
+) => DisposeMethod;
+
+export type ExtendedFunc<Func extends ArbitraryFunc, Output> = Func & {
+  addReader: IAddReaderMethod<Output>;
+};
 
 /**
  * observable数据读取封装
@@ -20,13 +23,8 @@ export type Watch<Output> = (
  * @interface IReader
  * @template Output
  */
-export interface IReader<Output> {
-  (
-    next?: PartialObserver<Output> | Observer_Next<Output>,
-    error?: Observer_Error,
-    complete?: Observer_Complete
-  ): () => void;
-  __isReader: boolean;
+export interface IDistributor<Output> extends IAddReaderMethod<Output> {
+  __isDistributor: boolean;
   __observable: Observable<Output>;
 }
 
@@ -38,23 +36,21 @@ export interface IReader<Output> {
  * @template Input
  * @template Output
  */
-export interface IReaderProvider<Input, Output> {
-  (input?: Input): IReader<Output>;
-  watch(
-    next?: PartialObserver<Output> | Observer_Next<Output>,
-    error?: Observer_Error,
-    complete?: Observer_Complete
-  ): () => void;
-  __isReaderProvider: boolean;
+export interface IDistributorProvider<Input, Output>
+  extends ExtendedFunc<(input?: Input) => IDistributor<Output>, Output> {
+  __isDistributorProvider: boolean;
 }
 
-export type OutputFn<T> = T extends IReaderProvider<infer Input, infer Output>
-  ? IReaderProvider<Input, Output>
+export type OutputFn<T> = T extends IDistributorProvider<
+  infer Input,
+  infer Output
+>
+  ? IDistributorProvider<Input, Output>
   : T extends ArbitraryFunc
-  ? T & { watch: Watch<ReturnType<T>> }
+  ? ExtendedFunc<T, ReturnType<T>>
   : () => T;
 
-export type SnapshotValue<T> = T extends IReaderProvider<any, infer Output>
+export type SnapshotValue<T> = T extends IDistributorProvider<any, infer Output>
   ? Output
   : T extends ArbitraryFunc
   ? ReturnType<T>
@@ -79,12 +75,12 @@ export type Observer_Complete = () => void;
 /**
  * 类型判断
  */
-function isProvider(fn: any): fn is IReaderProvider<any, any> {
-  return fn.__isReaderProvider;
+function isProvider(fn: any): fn is IDistributorProvider<any, any> {
+  return fn.__isDistributorProvider;
 }
 
-function isReader(fn: any): fn is IReader<any> {
-  return fn.__isReader;
+function isReader(fn: any): fn is IDistributor<any> {
+  return fn.__isDistributor;
 }
 
 /**
@@ -95,18 +91,18 @@ function isReader(fn: any): fn is IReader<any> {
  * @param {PartialObserver<Output>[]} outerObservers
  * @param {OperatorFunction<any, any>[]} operators
  * @param {boolean} [inputAsObservable=false]
- * @returns {IReader<Output>}
+ * @returns {IDistributor<Output>}
  */
-function createReader<Output>(
+function createDistributor<Output>(
   input: any,
   outerObservers: PartialObserver<Output>[],
   operators: OperatorFunction<any, any>[],
   inputAsObservable: boolean = false
-): IReader<Output> {
+): IDistributor<Output> {
   const observable: Observable<Output> = inputAsObservable
     ? input
     : (<any>of(input).pipe)(...operators);
-  const reader = (
+  const distributor = (
     next?: PartialObserver<Output> | Observer_Next<Output>,
     error?: Observer_Error,
     complete?: Observer_Complete
@@ -131,30 +127,30 @@ function createReader<Output>(
       subscription.unsubscribe();
     };
   };
-  reader.__isReader = true;
-  reader.__observable = observable;
-  return reader;
+  distributor.__isDistributor = true;
+  distributor.__observable = observable;
+  return distributor;
 }
 
 /**
  *生成一个watch方法
  *
  * @template Output
- * @param {PartialObserver<Output>[]}
- * @returns {Watch<Output>}
+ * @param {PartialObserver<Output>[]} existedReaders
+ * @returns {IAddReaderMethod<Output>}
  */
-function createWatchMethod<Output>(
-  observers: PartialObserver<Output>[]
-): Watch<Output> {
+function createAddReader<Output>(
+  existedReaders: PartialObserver<Output>[]
+): IAddReaderMethod<Output> {
   return (
     next?: PartialObserver<Output> | Observer_Next<Output>,
     error?: Observer_Error,
     complete?: Observer_Complete
   ) => {
     const observer = unifyObserver(next, error, complete);
-    observers.push(observer);
+    existedReaders.push(observer);
     return () => {
-      removeFromArray(observers, observer);
+      removeFromArray(existedReaders, observer);
     };
   };
 }
@@ -175,13 +171,13 @@ export function create<Description extends { [prop: string]: any }>(
       snapshot[key] = value;
     } else {
       if (isProvider(value)) {
-        // 自动更新snapshot
-        value.watch(next => {
+        value.addReader(next => {
+          // 自动更新snapshot
           snapshot[key] = next;
         });
         updator[key] = value;
       } else {
-        const observsers: PartialObserver<ReturnType<typeof fn>>[] = [];
+        const observsers: PartialObserver<ReturnType<typeof value>>[] = [];
         const fn = (...args: any[]): ReturnType<typeof value> => {
           // 自动更新snapshot
           snapshot[key] = value(...args);
@@ -189,7 +185,7 @@ export function create<Description extends { [prop: string]: any }>(
           deliver(observsers, 'next', snapshot[key]);
           return snapshot[key];
         };
-        (fn as any).watch = createWatchMethod<ReturnType<typeof value>>(
+        (fn as any).addReader = createAddReader<ReturnType<typeof value>>(
           observsers
         );
         updator[key] = fn;
@@ -209,19 +205,30 @@ export function create<Description extends { [prop: string]: any }>(
  * @template Input
  * @template Output
  * @param {OperatorFunction<any, any>[]} operators
- * @returns {IReaderProvider<Input, Output>}
+ * @returns {IDistributorProvider<Input, Output>}
  */
 export function provider<Input, Output>(
   operators: OperatorFunction<any, any>[]
-): IReaderProvider<Input, Output> {
+): IDistributorProvider<Input, Output> {
   // 通过watch方法添加的observer视为outerObserver
   const outerObservers: PartialObserver<Output>[] = [];
-  const provider: IReaderProvider<Input, Output> = (input?: Input) => {
-    return createReader<Output>(input, outerObservers, operators);
+  const provider: IDistributorProvider<Input, Output> = (input?: Input) => {
+    return createDistributor<Output>(input, outerObservers, operators);
   };
-  provider.__isReaderProvider = true;
-  provider.watch = createWatchMethod(outerObservers);
+  provider.__isDistributorProvider = true;
+  provider.addReader = createAddReader(outerObservers);
   return provider;
+}
+
+export function connect<Output>(
+  source: ExtendedFunc<ArbitraryFunc, Output>,
+  target: ArbitraryFunc
+): DisposeMethod | undefined {
+  if (typeof source.addReader === 'function') {
+    return source.addReader((value: Output) => {
+      target(value);
+    });
+  }
 }
 
 /**
@@ -230,15 +237,15 @@ export function provider<Input, Output>(
  * @export
  * @template T
  * @param {any[]} pendings
- * @returns {IReader<T>}
+ * @returns {IDistributor<T>}
  */
-export function zip<T>(pendings: any[]): IReader<T> {
+export function zip<T>(pendings: any[]): IDistributor<T> {
   const observable = _zip(
     ...pendings.map(v => {
       return isReader(v) ? v.__observable : of(v);
     })
   );
-  return createReader(observable, [], [], true);
+  return createDistributor(observable, [], [], true);
 }
 
 /**
@@ -248,7 +255,7 @@ export function zip<T>(pendings: any[]): IReader<T> {
  * @template T
  * @returns
  */
-export function self<T>() {
+export function returnSelf<T>() {
   return (value: T): T => {
     return value;
   };
