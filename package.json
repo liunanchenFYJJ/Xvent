@@ -1,6 +1,6 @@
 {
   "name": "@luwenxull/xvent",
-  "version": "0.2.2",
+  "version": "0.2.4",
   "main": "lib/index.js",
   "repository": "https://github.com/luwenxull/xvent",
   "author": "luwenxull <992273307@qq.com>",
@@ -8,19 +8,22 @@
   "devDependencies": {
     "@types/jest": "^23.3.10",
     "@types/lodash": "^4.14.118",
+    "@types/react": "^16.7.13",
     "jest": "^23.6.0",
     "prettier": "^1.15.3",
     "ts-jest": "^23.10.5",
     "typescript": "^3.2.1"
   },
   "dependencies": {
-    "lodash": "^4.17.11",
     "rxjs": "^6.3.3"
+  },
+  "peerDependencies": {
+    "react": "^16.6.3"
   },
   "scripts": {
     "test": "jest --verbose",
     "build": "tsc",
-    "prettier": "prettier --write ./src/*.ts ./lib/*.js ./lib/*.d.ts",
+    "prettier": "prettier --write ./src/**/*.ts ./lib/**/*.js ./lib/**/*.d.ts",
     "pub": "npm publish --access=public"
   }
 }

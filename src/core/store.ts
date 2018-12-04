@@ -1,6 +1,6 @@
 import { of, zip as _zip, PartialObserver, Observable } from 'rxjs';
 import { OperatorFunction } from 'rxjs/internal/types';
-import { unifyObserver, deliver, removeFromArray } from './util';
+import { unifyObserver, deliver, removeFromArray } from '../util';
 
 export type ArbitraryFunc = (...args: any[]) => any; // 任意函数
 

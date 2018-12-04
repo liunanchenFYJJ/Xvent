@@ -1,4 +1,4 @@
-import { removeFromArray } from '../util'
+import { removeFromArray } from '..'
 
 test('removeFromArray', () => {
   expect(removeFromArray([0, 1], 1)).toEqual([0])
