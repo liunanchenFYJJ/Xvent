@@ -45,11 +45,11 @@ test('provider', done => {
   expect(snapshot.add1).toBe(2)
 })
 
-test('watch', () => {
+test('addReader', () => {
   const {updator} = create({
     name: 'wenxu',
     age: (v: number) => v - 1,
-    ten: provider<any, number>([mapTo(10)])
+    ten: provider<any, number>([mapTo(10)]),
   })
   const fn = jest.fn()
   updator.ten.addReader(fn)

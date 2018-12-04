@@ -108,18 +108,15 @@ function createDistributor<Output>(
     complete?: Observer_Complete
   ) => {
     const innerObserver = unifyObserver(next, error, complete);
-    const allObsersers = ([] as PartialObserver<Output>[])
-      .concat(innerObserver)
-      .concat(outerObservers); // 固定通知顺序
     const subscription = observable.subscribe(
       value => {
-        deliver(allObsersers, 'next', value);
+        deliver([innerObserver].concat(outerObservers), 'next', value);
       },
       error => {
-        deliver(allObsersers, 'error', error);
+        deliver([innerObserver].concat(outerObservers), 'error', error);
       },
       () => {
-        deliver(allObsersers, 'complete');
+        deliver([innerObserver].concat(outerObservers), 'complete');
       }
     );
     // 立即返回一个disposer，用来解绑
@@ -133,7 +130,7 @@ function createDistributor<Output>(
 }
 
 /**
- *生成一个watch方法
+ *生成一个addReader方法
  *
  * @template Output
  * @param {PartialObserver<Output>[]} existedReaders
@@ -210,7 +207,7 @@ export function create<Description extends { [prop: string]: any }>(
 export function provider<Input, Output>(
   operators: OperatorFunction<any, any>[]
 ): IDistributorProvider<Input, Output> {
-  // 通过watch方法添加的observer视为outerObserver
+  // 通过addReader方法添加的observer视为outerObserver
   const outerObservers: PartialObserver<Output>[] = [];
   const provider: IDistributorProvider<Input, Output> = (input?: Input) => {
     return createDistributor<Output>(input, outerObservers, operators);
