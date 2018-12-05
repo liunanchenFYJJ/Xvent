@@ -1,25 +1,26 @@
 import { Component } from 'react';
-import { Updator, Snapshot } from '../core/store';
+import { Updator, connect, ExtendedFunc, ArbitraryFunc } from '../core/store';
 
-export interface StoreHelper<Description> {
-  updator: Updator<Description>;
-  snapshot: Snapshot<Description>;
+function isExtendedFn<T>(fn: any): fn is ExtendedFunc<ArbitraryFunc, T> {
+  return typeof fn.addReader === 'function';
 }
 
-export type StoreCreator<Description> = () => StoreHelper<Description>;
-
-export default class StoredComponent<
+export default function connectWithComponent<
   Description,
-  Prop = {},
-  State = {},
-  SS = any
-> extends Component<Prop, State, SS> {
-  protected updator: Updator<Description>;
-  protected snapshot: Snapshot<Description>;
-  constructor(props: any, storeCreator: StoreCreator<Description>) {
-    super(props);
-    const { updator, snapshot } = storeCreator();
-    this.updator = updator;
-    this.snapshot = snapshot;
+  Field extends keyof Description
+>(comp: Component, updator: Updator<Description>, fields?: Field[]) {
+  const keys = fields ? fields : (Object.keys(updator) as Field[]);
+  for (const key of keys) {
+    const fn = updator[key];
+    if (isExtendedFn(fn)) {
+      connect(
+        fn,
+        () => {
+          comp.setState({
+            /* just quene update */
+          });
+        }
+      );
+    }
   }
 }

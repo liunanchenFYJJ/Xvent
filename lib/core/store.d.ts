@@ -1,6 +1,12 @@
 import { PartialObserver, Observable } from 'rxjs';
 import { OperatorFunction } from 'rxjs/internal/types';
 export declare type ArbitraryFunc = (...args: any[]) => any;
+/**
+ * 可索引object
+ */
+export declare type IndexedObject = {
+  [prop: string]: any;
+};
 export declare type DisposeMethod = () => void;
 export declare type IAddReaderMethod<Output> = (
   next?: PartialObserver<Output> | Observer_Next<Output>,
@@ -33,7 +39,7 @@ export interface IDistributorProvider<Input, Output>
   extends ExtendedFunc<(input?: Input) => IDistributor<Output>, Output> {
   __isDistributorProvider: boolean;
 }
-export declare type OutputFn<T> = T extends IDistributorProvider<
+export declare type UpdatorFunc<T> = T extends IDistributorProvider<
   infer Input,
   infer Output
 >
@@ -52,7 +58,7 @@ export declare type SnapshotValue<T> = T extends IDistributorProvider<
 /**
  * 数据updater
  */
-export declare type Updator<T> = { [P in keyof T]: OutputFn<T[P]> };
+export declare type Updator<T> = { [P in keyof T]: UpdatorFunc<T[P]> };
 /**
  * 数据快照
  */
@@ -63,11 +69,7 @@ export declare type Snapshot<T> = { [P in keyof T]: SnapshotValue<T[P]> };
 export declare type Observer_Next<T> = (value: T) => void;
 export declare type Observer_Error = (error: any) => void;
 export declare type Observer_Complete = () => void;
-export declare function create<
-  Description extends {
-    [prop: string]: any;
-  }
->(
+export declare function create<Description extends IndexedObject>(
   desc: Description
 ): {
   updator: Updator<Description>;
@@ -85,9 +87,11 @@ export declare function create<
 export declare function provider<Input, Output>(
   operators: OperatorFunction<any, any>[]
 ): IDistributorProvider<Input, Output>;
-export declare function connect<Output>(
-  source: ExtendedFunc<ArbitraryFunc, Output>,
-  target: ArbitraryFunc
+export declare function connect<Output, Func extends (input: Output) => any>(
+  source:
+    | IDistributorProvider<any, Output>
+    | ExtendedFunc<ArbitraryFunc, Output>,
+  target: Func
 ): DisposeMethod | undefined;
 /**
  * 打包处理reader和普通数据

@@ -4,6 +4,13 @@ import { unifyObserver, deliver, removeFromArray } from '../util';
 
 export type ArbitraryFunc = (...args: any[]) => any; // 任意函数
 
+/**
+ * 可索引object
+ */
+export type IndexedObject = {
+  [prop: string]: any;
+};
+
 export type DisposeMethod = () => void;
 
 export type IAddReaderMethod<Output> = (
@@ -41,7 +48,7 @@ export interface IDistributorProvider<Input, Output>
   __isDistributorProvider: boolean;
 }
 
-export type OutputFn<T> = T extends IDistributorProvider<
+export type UpdatorFunc<T> = T extends IDistributorProvider<
   infer Input,
   infer Output
 >
@@ -59,7 +66,7 @@ export type SnapshotValue<T> = T extends IDistributorProvider<any, infer Output>
 /**
  * 数据updater
  */
-export type Updator<T> = { [P in keyof T]: OutputFn<T[P]> };
+export type Updator<T> = { [P in keyof T]: UpdatorFunc<T[P]> };
 /**
  * 数据快照
  */
@@ -152,7 +159,7 @@ function createAddReader<Output>(
   };
 }
 
-export function create<Description extends { [prop: string]: any }>(
+export function create<Description extends IndexedObject>(
   desc: Description
 ): {
   updator: Updator<Description>;
@@ -217,15 +224,15 @@ export function provider<Input, Output>(
   return provider;
 }
 
-export function connect<Output>(
-  source: ExtendedFunc<ArbitraryFunc, Output>,
-  target: ArbitraryFunc
+export function connect<Output, Func extends (input: Output) => any>(
+  source:
+    | IDistributorProvider<any, Output>
+    | ExtendedFunc<ArbitraryFunc, Output>,
+  target: Func
 ): DisposeMethod | undefined {
-  if (typeof source.addReader === 'function') {
-    return source.addReader((value: Output) => {
-      target(value);
-    });
-  }
+  return source.addReader((value: Output) => {
+    target(value);
+  });
 }
 
 /**

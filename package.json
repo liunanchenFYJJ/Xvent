@@ -1,6 +1,6 @@
 {
   "name": "@luwenxull/xvent",
-  "version": "0.2.5",
+  "version": "0.2.8",
   "main": "lib/index.js",
   "repository": "https://github.com/luwenxull/xvent",
   "author": "luwenxull <992273307@qq.com>",

@@ -1,17 +1,6 @@
 import { Component } from 'react';
-import { Updator, Snapshot } from '../core/store';
-export interface StoreHelper<Description> {
-  updator: Updator<Description>;
-  snapshot: Snapshot<Description>;
-}
-export declare type StoreCreator<Description> = () => StoreHelper<Description>;
-export default class StoredComponent<
+import { Updator } from '../core/store';
+export default function connectWithComponent<
   Description,
-  Prop = {},
-  State = {},
-  SS = any
-> extends Component<Prop, State, SS> {
-  protected updator: Updator<Description>;
-  protected snapshot: Snapshot<Description>;
-  constructor(props: any, storeCreator: StoreCreator<Description>);
-}
+  Field extends keyof Description
+>(comp: Component, updator: Updator<Description>, fields?: Field[]): void;
