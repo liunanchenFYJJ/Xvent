@@ -1,6 +1,6 @@
 import { of, zip as _zip, PartialObserver, Observable } from 'rxjs';
 import { OperatorFunction } from 'rxjs/internal/types';
-import { unifyObserver, deliver, removeFromArray } from '../util';
+import { unifyObserver, deliver, removeFromArray, isFunction } from '../util';
 
 export type ArbitraryFunc = (...args: any[]) => any; // 任意函数
 
@@ -224,14 +224,57 @@ export function provider<Input, Output>(
   return provider;
 }
 
-export function connect<Output, Func extends (input: Output) => any>(
+export function pipe<Output, Func extends (input: Output) => any>(
   source:
     | IDistributorProvider<any, Output>
     | ExtendedFunc<ArbitraryFunc, Output>,
   target: Func
+): DisposeMethod | undefined;
+export function pipe<
+  Output,
+  Func extends (input: Output, param: ExtraParam) => any,
+  ExtraParam
+>(
+  source:
+    | IDistributorProvider<any, Output>
+    | ExtendedFunc<ArbitraryFunc, Output>,
+  target: Func,
+  extraParams: (() => ExtraParam) | ExtraParam
+): DisposeMethod | undefined;
+/**
+ * 连接输入和输出
+ *
+ * @export
+ * @template Output
+ * @template Func
+ * @template ExtraParam
+ * @param {(IDistributorProvider<any, Output>
+ *     | ExtendedFunc<ArbitraryFunc, Output>)} source
+ * @param {Func} target
+ * @param {((() => ExtraParam) | ExtraParam)} [extraParams]
+ * @returns {(DisposeMethod | undefined)}
+ */
+export function pipe<
+  Output,
+  Func extends (input: Output, param?: ExtraParam) => any,
+  ExtraParam
+>(
+  source:
+    | IDistributorProvider<any, Output>
+    | ExtendedFunc<ArbitraryFunc, Output>,
+  target: Func,
+  extraParams?: (() => ExtraParam) | ExtraParam
 ): DisposeMethod | undefined {
   return source.addReader((value: Output) => {
-    target(value);
+    if (typeof extraParams !== 'undefined') {
+      if (isFunction(extraParams)) {
+        target(value, extraParams());
+      } else {
+        target(value, extraParams);
+      }
+    } else {
+      target(value);
+    }
   });
 }
 

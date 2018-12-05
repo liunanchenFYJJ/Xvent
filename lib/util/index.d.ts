@@ -2,7 +2,8 @@ import { PartialObserver } from 'rxjs';
 import {
   Observer_Next,
   Observer_Error,
-  Observer_Complete
+  Observer_Complete,
+  ArbitraryFunc
 } from '../core/store';
 /**
  * 统一observer的格式
@@ -42,3 +43,4 @@ export declare function deliver<T, K extends 'complete'>(
  * @param {*} item
  */
 export declare function removeFromArray(array: any[], item: any): any[];
+export declare function isFunction(fn: any): fn is ArbitraryFunc;

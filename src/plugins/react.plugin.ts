@@ -1,5 +1,5 @@
 import { Component } from 'react';
-import { Updator, connect, ExtendedFunc, ArbitraryFunc } from '../core/store';
+import { Updator, pipe, ExtendedFunc, ArbitraryFunc } from '../core/store';
 
 function isExtendedFn<T>(fn: any): fn is ExtendedFunc<ArbitraryFunc, T> {
   return typeof fn.addReader === 'function';
@@ -13,7 +13,7 @@ export default function connectWithComponent<
   for (const key of keys) {
     const fn = updator[key];
     if (isExtendedFn(fn)) {
-      connect(
+      pipe(
         fn,
         () => {
           comp.setState({

@@ -2,7 +2,8 @@ import { PartialObserver } from 'rxjs';
 import {
   Observer_Next,
   Observer_Error,
-  Observer_Complete
+  Observer_Complete,
+  ArbitraryFunc
 } from '../core/store';
 
 /**
@@ -86,4 +87,8 @@ export function removeFromArray(array: any[], item: any): any[] {
     array.splice(index, 1);
   }
   return array;
+}
+
+export function isFunction(fn: any): fn is ArbitraryFunc {
+  return typeof fn === 'function';
 }

@@ -1,5 +1,5 @@
 import { map, delay, mapTo } from 'rxjs/operators'
-import { create, provider, zip, returnSelf, connect } from '../store'
+import { create, provider, zip, returnSelf, pipe } from '../store'
 
 test('create', () => {
   const { updator, snapshot } = create({
@@ -13,16 +13,26 @@ test('create', () => {
   expect(snapshot.age).toBe(9)
 })
 
-test('pipe', () => {
+test('connect-1', () => {
   const { updator } = create({
     str: returnSelf<string>()
   })
   const { updator : _up, snapshot } = create({
     chars: (str: string) => str.split('')
   })
-  connect(updator.str, _up.chars)
+  pipe(updator.str, _up.chars)
   updator.str('www')
   expect(snapshot.chars).toEqual(['w','w','w'])
+})
+
+test('connect-2', () => {
+  const {updator, snapshot} = create({
+    name: returnSelf<string>(),
+    fullName: (name: string, x: string) => x + name
+  })
+  pipe(updator.name, updator.fullName, 'lu')
+  updator.name('wenxu')
+  expect(snapshot.fullName).toBe('luwenxu')
 })
 
 test('provider', done => {

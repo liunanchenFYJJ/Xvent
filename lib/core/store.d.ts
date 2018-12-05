@@ -87,11 +87,22 @@ export declare function create<Description extends IndexedObject>(
 export declare function provider<Input, Output>(
   operators: OperatorFunction<any, any>[]
 ): IDistributorProvider<Input, Output>;
-export declare function connect<Output, Func extends (input: Output) => any>(
+export declare function pipe<Output, Func extends (input: Output) => any>(
   source:
     | IDistributorProvider<any, Output>
     | ExtendedFunc<ArbitraryFunc, Output>,
   target: Func
+): DisposeMethod | undefined;
+export declare function pipe<
+  Output,
+  Func extends (input: Output, param: ExtraParam) => any,
+  ExtraParam
+>(
+  source:
+    | IDistributorProvider<any, Output>
+    | ExtendedFunc<ArbitraryFunc, Output>,
+  target: Func,
+  extraParams: (() => ExtraParam) | ExtraParam
 ): DisposeMethod | undefined;
 /**
  * 打包处理reader和普通数据
